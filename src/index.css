@@ -94,13 +94,14 @@
 
 @media print {
   @page {
-    margin: 12mm;
+    margin: 8mm;
   }
 
   body {
     background: white !important;
     background-image: none !important;
     color: black !important;
+    font-size: 9px !important;
   }
 
   .no-print {
@@ -109,15 +110,43 @@
 
   header {
     position: static !important;
+    margin-bottom: 4mm !important;
+  }
+
+  header input {
+    font-size: 14px !important;
+    height: auto !important;
+    padding: 0 !important;
   }
 
   main {
     max-width: none !important;
     padding: 0 !important;
+    gap: 3mm !important;
   }
 
-  .print\:grid-stack {
-    display: block !important;
+  main > * + * {
+    margin-top: 3mm !important;
+  }
+
+  /* Compact stats row */
+  main > div:first-child {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 2mm !important;
+  }
+
+  main > div:first-child .p-4 {
+    padding: 2mm !important;
+  }
+
+  main > div:first-child p {
+    font-size: 8px !important;
+    margin: 0 !important;
+  }
+
+  main > div:first-child .text-xl {
+    font-size: 11px !important;
   }
 
   input,
@@ -127,14 +156,32 @@
     box-shadow: none !important;
     background: transparent !important;
     color: inherit !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    font-size: 8px !important;
+    line-height: 1.2 !important;
+  }
+
+  [role='combobox'] svg {
+    display: none !important;
   }
 
   table {
     width: 100% !important;
     min-width: 0 !important;
-    font-size: 11px !important;
+    font-size: 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  thead th {
+    padding: 1mm 1.5mm !important;
+    font-size: 7px !important;
+  }
+
+  tbody td {
+    padding: 0.5mm 1.5mm !important;
+    vertical-align: middle !important;
   }
 
   tr {
@@ -150,10 +197,8 @@
     display: none !important;
   }
 
-  /* Expand scroll areas so summary prints fully */
-  [data-radix-scroll-area-viewport] {
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
+  /* Keep table and summary denser on paper */
+  .rounded-xl {
+    border-radius: 0 !important;
   }
 }

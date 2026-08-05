@@ -82,7 +82,7 @@ export function ProjectPage() {
       <main className="mx-auto max-w-[1600px] space-y-4 px-4 py-4 sm:px-6 sm:py-6">
         <StatsCards totals={summary.totals} locale={locale} />
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] print:block print:space-y-4">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] print:block print:space-y-3">
           <CableRunsTable
             items={filteredSortedItems}
             search={search}

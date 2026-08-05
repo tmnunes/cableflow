@@ -53,9 +53,9 @@ export function CableRunsTable({
   const { t } = useTranslation()
 
   return (
-    <Card className="border-border/70">
-      <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="text-base">{t('table.title')}</CardTitle>
+    <Card className="border-border/70 print:border print:shadow-none">
+      <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between print:p-2 print:pb-1">
+        <CardTitle className="text-base print:text-sm">{t('table.title')}</CardTitle>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center no-print">
           <div className="relative w-full sm:w-64">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -209,15 +209,15 @@ function CableRunRow({
   const parsed = parseSpec(run.spec)
 
   return (
-    <tr className="border-b border-border/70 align-top transition-colors hover:bg-muted/20">
-      <td className="px-3 py-2">
+    <tr className="border-b border-border/70 align-top transition-colors hover:bg-muted/20 print:align-middle">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Field
           value={run.description}
           onChange={(description) => onUpdate(run.id, { description })}
           error={errors.description}
         />
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Field
           type="number"
           min={0.01}
@@ -231,7 +231,7 @@ function CableRunRow({
           className="font-mono"
         />
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Select
           value={run.type}
           onValueChange={(value) => onUpdate(run.id, { type: value as CircuitType })}
@@ -249,12 +249,12 @@ function CableRunRow({
         </Select>
         {errors.type ? <ErrorText text={errors.type} /> : null}
       </td>
-      <td className="px-3 py-2">
-        <div className="flex h-9 items-center rounded-md border border-transparent bg-muted/50 px-3 font-mono text-sm tabular-nums">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
+        <div className="flex h-9 items-center rounded-md border border-transparent bg-muted/50 px-3 font-mono text-sm tabular-nums print:h-auto print:bg-transparent print:px-0 print:text-[9px]">
           {section} {t('table.sectionUnit')}
         </div>
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Field
           type="number"
           min={1}
@@ -268,7 +268,7 @@ function CableRunRow({
           className="font-mono"
         />
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Field
           value={run.spec}
           onChange={(spec) => onUpdate(run.id, { spec: spec.toUpperCase() })}
@@ -276,7 +276,7 @@ function CableRunRow({
           className="font-mono uppercase"
         />
         {parsed.ok ? (
-          <div className="mt-1.5 flex flex-wrap gap-1">
+          <div className="mt-1.5 flex flex-wrap gap-1 no-print">
             {parsed.conductors.map((c) => (
               <Tooltip key={c.code}>
                 <TooltipTrigger asChild>
@@ -293,12 +293,12 @@ function CableRunRow({
           </div>
         ) : null}
         {parsed.ok ? (
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-[10px] text-muted-foreground no-print">
             {formatSpecBreakdown(parsed.conductors)}
           </p>
         ) : null}
       </td>
-      <td className="px-3 py-2">
+      <td className="px-3 py-2 print:px-1 print:py-0.5">
         <Field value={run.notes} onChange={(notes) => onUpdate(run.id, { notes })} />
       </td>
       <td className="px-3 py-2 no-print">
@@ -369,5 +369,5 @@ function Field({
 }
 
 function ErrorText({ text }: { text: string }) {
-  return <p className="mt-1 text-[11px] text-destructive">{text}</p>
+  return <p className="mt-1 text-[11px] text-destructive no-print">{text}</p>
 }
