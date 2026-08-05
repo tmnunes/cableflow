@@ -1,0 +1,133 @@
+type DeepStringify<T> = {
+  [K in keyof T]: T[K] extends string ? string : DeepStringify<T[K]>
+}
+
+export const en = {
+  app: {
+    name: 'CableFlow',
+    tagline: 'Cable length calculator for electricians',
+  },
+  header: {
+    projectName: 'Project name',
+    projectNamePlaceholder: 'Enter project name',
+    import: 'Import',
+    export: 'Export',
+    print: 'Print',
+    clearAll: 'Clear all',
+    clearAllConfirm:
+      'Clear the project name and all cable runs? This cannot be undone.',
+    language: 'Language',
+    themeLight: 'Light mode',
+    themeDark: 'Dark mode',
+    undo: 'Undo delete',
+  },
+  stats: {
+    conduitLength: 'Total conduit length',
+    cableLength: 'Total cable length',
+    cableRuns: 'Cable runs',
+    conductors: 'Conductors',
+    meters: 'm',
+  },
+  table: {
+    title: 'Cable runs',
+    search: 'Search runs…',
+    add: 'Add run',
+    duplicate: 'Duplicate',
+    delete: 'Delete',
+    description: 'Description',
+    distance: 'Distance (m)',
+    circuit: 'Circuit',
+    section: 'Section',
+    conduit: 'Conduit',
+    specification: 'Specification',
+    notes: 'Notes',
+    actions: 'Actions',
+    empty: 'No cable runs yet. Add a run to start calculating.',
+    emptySearch: 'No runs match your search.',
+    sectionUnit: 'mm²',
+  },
+  circuits: {
+    I: 'Lighting (I)',
+    T: 'Socket (T)',
+    P: 'Power (P)',
+    Q: 'Large Power (Q)',
+    G: 'Main Feed (G)',
+  },
+  conductors: {
+    F: 'Phase (F)',
+    R: 'Return (R)',
+    VJ: 'Traveller (VJ)',
+    N: 'Neutral (N)',
+    T: 'Earth (T)',
+    colors: {
+      brown: 'Brown',
+      orange: 'Orange',
+      grey: 'Grey',
+      blue: 'Blue',
+      greenYellow: 'Green / Yellow',
+    },
+  },
+  summary: {
+    title: 'Live summary',
+    bySection: 'By cable section',
+    empty: 'Add valid cable runs to see totals.',
+    meters: 'm',
+    sectionLabel: '{{section}} mm²',
+  },
+  validation: {
+    projectNameRequired: 'Project name is required.',
+    descriptionRequired: 'Description is required.',
+    distanceRequired: 'Distance is required.',
+    distancePositive: 'Distance must be greater than zero.',
+    circuitRequired: 'Circuit type is required.',
+    conduitRequired: 'Conduit size is required.',
+    conduitPositive: 'Conduit must be a positive whole number.',
+    conduitSpecMismatch:
+      'Conduit ({{conduit}}) must match the specification count ({{specCount}}).',
+    specRequired: 'Specification is required.',
+    spec: {
+      empty: 'Specification is required.',
+      invalidQuantity: 'Invalid quantity in specification.',
+      trailingQuantity: 'Specification ends with a quantity without a code.',
+      unknownCode: 'Unknown conductor code in specification.',
+    },
+  },
+  toast: {
+    exported: 'Project exported.',
+    imported: 'Project imported successfully.',
+    importFailed: 'Import failed: {{reason}}',
+    deleted: 'Cable run deleted.',
+    undone: 'Delete undone.',
+    duplicated: 'Cable run duplicated.',
+    added: 'Cable run added.',
+    cleared: 'Project cleared. Enter a new project name to continue.',
+    projectNameRequired: 'Enter a project name before exporting.',
+    nothingToUndo: 'Nothing to undo.',
+    copySuffix: ' (copy)',
+  },
+  importErrors: {
+    invalidJson: 'File is not valid JSON.',
+    invalidStructure: 'JSON structure is invalid.',
+    missingProjectName: 'Missing project name.',
+    invalidVersion: 'Invalid version field.',
+    missingItems: 'Missing items array.',
+    invalidItem: 'One or more items are invalid.',
+    itemDescription: 'Item {{index}}: description is required.',
+    itemDistance: 'Item {{index}}: distance must be a positive number.',
+    itemType: 'Item {{index}}: circuit type is invalid.',
+    itemConduit: 'Item {{index}}: conduit must be a positive whole number (e.g. 4).',
+    itemConduitMismatch:
+      'Item {{index}}: conduit size must equal the number of conductors in the specification.',
+    itemSpec: 'Item {{index}}: specification is required.',
+    itemSpecParse: 'Item {{index}}: specification could not be parsed.',
+  },
+  shortcuts: {
+    hint: 'Ctrl+S export · Ctrl+O import · Ctrl+P print',
+  },
+  print: {
+    generated: 'Generated {{date}}',
+    summary: 'Cable summary',
+  },
+} as const
+
+export type TranslationSchema = DeepStringify<typeof en>

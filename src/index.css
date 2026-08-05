@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'ui-monospace', monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --background: #f4f6f8;
+  --foreground: #1a2332;
+  --card: #ffffff;
+  --card-foreground: #1a2332;
+  --popover: #ffffff;
+  --popover-foreground: #1a2332;
+  --primary: #c45c16;
+  --primary-foreground: #fffaf5;
+  --secondary: #e8eef4;
+  --secondary-foreground: #243247;
+  --muted: #e9eef3;
+  --muted-foreground: #5c6b7d;
+  --accent: #efe6dc;
+  --accent-foreground: #3a2a1c;
+  --destructive: #c0392b;
+  --destructive-foreground: #fff7f6;
+  --border: #d5dee8;
+  --input: #d5dee8;
+  --ring: #c45c16;
+}
+
+.dark {
+  --background: #0f141b;
+  --foreground: #e8eef5;
+  --card: #171e28;
+  --card-foreground: #e8eef5;
+  --popover: #171e28;
+  --popover-foreground: #e8eef5;
+  --primary: #e67e22;
+  --primary-foreground: #1a1008;
+  --secondary: #222b38;
+  --secondary-foreground: #dce5f0;
+  --muted: #1d2530;
+  --muted-foreground: #95a3b5;
+  --accent: #2a2218;
+  --accent-foreground: #f0e2d2;
+  --destructive: #e74c3c;
+  --destructive-foreground: #fff7f6;
+  --border: #2c3644;
+  --input: #2c3644;
+  --ring: #e67e22;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply min-h-screen bg-background font-sans text-foreground;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% -10%, color-mix(in oklab, var(--primary) 12%, transparent), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in oklab, #3b82f6 8%, transparent), transparent);
+  }
+
+  #root {
+    @apply min-h-screen;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+
+  body {
+    background: white !important;
+    background-image: none !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  header {
+    position: static !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+
+  .print\:grid-stack {
+    display: block !important;
+  }
+
+  input,
+  button,
+  [role='combobox'] {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    color: inherit !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  table {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 11px !important;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  .shadow-sm,
+  .shadow-md {
+    box-shadow: none !important;
+  }
+
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  /* Expand scroll areas so summary prints fully */
+  [data-radix-scroll-area-viewport] {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
