@@ -34,8 +34,9 @@ export const CONDUCTOR_CODES_BY_LENGTH: readonly ConductorCode[] = [...CONDUCTOR
   .map((c) => c.code)
   .sort((a, b) => b.length - a.length)
 
-export const PROJECT_VERSION = 1
-
-export const STORAGE_KEY = 'cableflow:project'
-export const THEME_KEY = 'cableflow:theme'
-export const LOCALE_KEY = 'cableflow:locale'
+export {
+  PROJECT_VERSION,
+  LEGACY_PROJECT_KEY as STORAGE_KEY,
+  THEME_KEY,
+  LOCALE_KEY,
+} from '@/services/storage/keys'

@@ -1,115 +1,63 @@
-/** Circuit type codes used in electrical projects */
-export type CircuitType = 'I' | 'T' | 'P' | 'Q' | 'G'
+export type { Locale, Theme } from '@/types/ui'
 
-/** Conductor codes inside a conduit specification */
-export type ConductorCode = 'F' | 'R' | 'VJ' | 'N' | 'T'
+export type {
+  CircuitType,
+  ConductorCode,
+  CircuitTypeDefinition,
+  ConductorDefinition,
+  ParsedConductor,
+  SpecParseResult,
+  SpecParseError,
+  SpecParseOutcome,
+  CableRun,
+  Project,
+  ProjectRecord,
+  ProjectExport,
+  ConductorLength,
+  SectionSummary,
+  ProjectTotals,
+  ProjectSummary,
+  SortField,
+  SortDirection,
+  ValidationErrors,
+} from '@/types/cable'
 
-export interface CircuitTypeDefinition {
-  code: CircuitType
-  sectionMm2: number
-}
+export type {
+  MaterialCategory,
+  MaterialUnit,
+  Material,
+  MaterialSupplierLink,
+} from '@/types/material'
+export { MATERIAL_CATEGORIES, MATERIAL_UNITS } from '@/types/material'
 
-export interface ConductorDefinition {
-  code: ConductorCode
-  /** CSS color token for UI swatches */
-  color: string
-  /** Tailwind-friendly hex for swatches */
-  hex: string
-  /** Secondary hex for striped conductors (e.g. earth) */
-  hexSecondary?: string
-}
+export type { Supplier } from '@/types/supplier'
+export type { Client } from '@/types/client'
+export type {
+  CompanySettings,
+  QuoteNumberState,
+} from '@/types/company'
+export {
+  defaultCompanySettings,
+  defaultQuoteNumberState,
+} from '@/types/company'
 
-export interface ParsedConductor {
-  code: ConductorCode
-  quantity: number
-}
+export type {
+  QuoteStatus,
+  QuoteItemSource,
+  QuoteItemSourceMeta,
+  QuoteItem,
+  LaborUnit,
+  LaborItem,
+  Quote,
+  CableRequirement,
+  AggregatedCableRequirement,
+  cableAggregateKey,
+} from '@/types/quote'
 
-export interface SpecParseResult {
-  ok: true
-  conductors: ParsedConductor[]
-}
-
-export interface SpecParseError {
-  ok: false
-  error: string
-  position?: number
-}
-
-export type SpecParseOutcome = SpecParseResult | SpecParseError
-
-export interface CableRun {
-  id: string
-  description: string
-  distance: number
-  type: CircuitType
-  /** Number of conductors the conduit can hold (plain integer, e.g. 4) */
-  conduit: number
-  spec: string
-  notes: string
-}
-
-export interface Project {
-  projectName: string
-  version: number
-  items: CableRun[]
-}
-
-/** Exportable JSON shape (ids optional for import flexibility) */
-export interface ProjectExport {
-  projectName: string
-  version: number
-  items: Array<{
-    id?: string
-    description: string
-    distance: number
-    type: CircuitType
-    conduit: number
-    spec: string
-    notes?: string
-  }>
-}
-
-export interface ConductorLength {
-  code: ConductorCode
-  meters: number
-}
-
-export interface SectionSummary {
-  sectionMm2: number
-  conductors: ConductorLength[]
-  totalMeters: number
-}
-
-export interface ProjectTotals {
-  totalConduitLength: number
-  totalCableLength: number
-  totalConductors: number
-  cableRuns: number
-}
-
-export interface ProjectSummary {
-  totals: ProjectTotals
-  bySection: SectionSummary[]
-}
-
-export type Locale = 'en' | 'pt'
-export type Theme = 'light' | 'dark'
-
-export type SortField =
-  | 'description'
-  | 'distance'
-  | 'type'
-  | 'section'
-  | 'conduit'
-  | 'spec'
-  | 'notes'
-
-export type SortDirection = 'asc' | 'desc'
-
-export interface ValidationErrors {
-  description?: string
-  distance?: string
-  type?: string
-  spec?: string
-  conduit?: string
-}
+export type {
+  AppData,
+  AppDataExport,
+  MaterialsExport,
+  SuppliersExport,
+} from '@/types/app'
+export { DATA_VERSION } from '@/types/app'

@@ -1,11 +1,24 @@
-import type { CableRun, Project, ProjectExport } from '@/types'
-import { PROJECT_VERSION } from '@/data/circuits'
+import type { AppData, AppDataExport, MaterialsExport, SuppliersExport } from '@/types/app'
+import { DATA_VERSION } from '@/types/app'
+import type { Material } from '@/types/material'
+import type { Project, ProjectExport } from '@/types/cable'
+import type { Supplier } from '@/types/supplier'
+import { PROJECT_VERSION } from '@/services/storage/keys'
 import { isCircuitType } from '@/utils/validation'
 import { createId } from '@/utils/cn'
 import { countConductors, parseConduitValue, parseSpec } from '@/utils/parser'
+import type { CableRun } from '@/types/cable'
 
 export type ImportResult =
   | { ok: true; project: Project }
+  | { ok: false; error: string }
+
+export type BackupImportResult =
+  | { ok: true; data: AppDataExport }
+  | { ok: false; error: string }
+
+export type EntityImportResult<T> =
+  | { ok: true; data: T }
   | { ok: false; error: string }
 
 export function toExportPayload(project: Project): ProjectExport {
@@ -23,6 +36,26 @@ export function toExportPayload(project: Project): ProjectExport {
   }
 }
 
+export function toAppDataExport(data: AppData): AppDataExport {
+  return {
+    version: DATA_VERSION,
+    projects: data.projects,
+    materials: data.materials,
+    suppliers: data.suppliers,
+    quotes: data.quotes,
+    companySettings: data.companySettings,
+    quoteNumberState: data.quoteNumberState,
+  }
+}
+
+export function toMaterialsExport(materials: Material[]): MaterialsExport {
+  return { version: DATA_VERSION, materials }
+}
+
+export function toSuppliersExport(suppliers: Supplier[]): SuppliersExport {
+  return { version: DATA_VERSION, suppliers }
+}
+
 export function parseImportJson(raw: string): ImportResult {
   let data: unknown
   try {
@@ -32,6 +65,83 @@ export function parseImportJson(raw: string): ImportResult {
   }
 
   return validateAndNormalize(data)
+}
+
+export function parseBackupImport(raw: string): BackupImportResult {
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    return { ok: false, error: 'invalidJson' }
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, error: 'invalidStructure' }
+  }
+
+  const obj = data as Record<string, unknown>
+  if (obj.version !== DATA_VERSION) {
+    return { ok: false, error: 'invalidVersion' }
+  }
+
+  if (!Array.isArray(obj.projects) || !Array.isArray(obj.materials) || !Array.isArray(obj.suppliers)) {
+    return { ok: false, error: 'invalidStructure' }
+  }
+
+  return {
+    ok: true,
+    data: {
+      version: DATA_VERSION,
+      projects: obj.projects as AppDataExport['projects'],
+      materials: obj.materials as Material[],
+      suppliers: obj.suppliers as Supplier[],
+      quotes: (obj.quotes as AppDataExport['quotes']) ?? [],
+      companySettings: obj.companySettings as AppDataExport['companySettings'],
+      quoteNumberState: obj.quoteNumberState as AppDataExport['quoteNumberState'],
+    },
+  }
+}
+
+export function parseMaterialsImport(raw: string): EntityImportResult<Material[]> {
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    return { ok: false, error: 'invalidJson' }
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, error: 'invalidStructure' }
+  }
+
+  const obj = data as Record<string, unknown>
+
+  if (Array.isArray(obj.materials)) {
+    return { ok: true, data: obj.materials as Material[] }
+  }
+
+  return { ok: false, error: 'missingMaterials' }
+}
+
+export function parseSuppliersImport(raw: string): EntityImportResult<Supplier[]> {
+  let data: unknown
+  try {
+    data = JSON.parse(raw)
+  } catch {
+    return { ok: false, error: 'invalidJson' }
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { ok: false, error: 'invalidStructure' }
+  }
+
+  const obj = data as Record<string, unknown>
+
+  if (Array.isArray(obj.suppliers)) {
+    return { ok: true, data: obj.suppliers as Supplier[] }
+  }
+
+  return { ok: false, error: 'missingSuppliers' }
 }
 
 export function validateAndNormalize(data: unknown): ImportResult {

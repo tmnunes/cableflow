@@ -1,31 +1,20 @@
 import type { RefObject } from 'react'
-import { Download, Eraser, Moon, Printer, Sun, Undo2, Upload } from 'lucide-react'
+import { Download, Eraser, Printer, Undo2, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import type { Locale, Theme } from '@/types'
+import { useAppData } from '@/hooks/useAppData'
 import { cn } from '@/utils/cn'
 
 interface AppHeaderProps {
   projectName: string
   onProjectNameChange: (value: string) => void
   projectNameInputRef: RefObject<HTMLInputElement | null>
-  theme: Theme
-  onThemeChange: (theme: Theme) => void
-  locale: Locale
-  onLocaleChange: (locale: Locale) => void
   onImport: () => void
   onExport: () => void
   onPrint: () => void
@@ -39,10 +28,6 @@ export function AppHeader({
   projectName,
   onProjectNameChange,
   projectNameInputRef,
-  theme,
-  onThemeChange,
-  locale,
-  onLocaleChange,
   onImport,
   onExport,
   onPrint,
@@ -52,6 +37,7 @@ export function AppHeader({
   canUndo,
 }: AppHeaderProps) {
   const { t } = useTranslation()
+  const { locale } = useAppData()
   const nameMissing = !projectName.trim()
 
   return (
@@ -97,32 +83,6 @@ export function AppHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 no-print">
-          <Select value={locale} onValueChange={(v) => onLocaleChange(v as Locale)}>
-            <SelectTrigger className="w-[120px]" aria-label={t('header.language')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="en">English</SelectItem>
-              <SelectItem value="pt">Português</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => onThemeChange(theme === 'dark' ? 'light' : 'dark')}
-                aria-label={theme === 'dark' ? t('header.themeLight') : t('header.themeDark')}
-              >
-                {theme === 'dark' ? <Sun /> : <Moon />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {theme === 'dark' ? t('header.themeLight') : t('header.themeDark')}
-            </TooltipContent>
-          </Tooltip>
-
           <Tooltip>
             <TooltipTrigger asChild>
               <Button

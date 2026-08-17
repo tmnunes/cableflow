@@ -1,19 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import type { CableRun, Locale, Project, SortDirection, SortField, Theme } from '@/types'
+import type { CableRun, Project, SortDirection, SortField } from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
+import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
 import { createId, downloadJson, slugifyFilename } from '@/utils/cn'
 import { toExportPayload, parseImportJson } from '@/services/importExport'
-import {
-  loadLocale,
-  loadProject,
-  loadTheme,
-  saveLocale,
-  saveProject,
-  saveTheme,
-} from '@/services/storage'
 
 function createEmptyRun(): CableRun {
   return {
@@ -27,11 +20,24 @@ function createEmptyRun(): CableRun {
   }
 }
 
-export function useProject() {
-  const { t, i18n } = useTranslation()
-  const [project, setProject] = useState<Project>(() => loadProject())
-  const [theme, setTheme] = useState<Theme>(() => loadTheme())
-  const [locale, setLocale] = useState<Locale>(() => loadLocale())
+export function useProject(projectId: string) {
+  const { t } = useTranslation()
+  const { projects, updateProject } = useAppData()
+  const projectRecord = useMemo(
+    () => projects.find((p) => p.id === projectId),
+    [projects, projectId],
+  )
+
+  const project: Project = useMemo(
+    () =>
+      projectRecord ?? {
+        projectName: '',
+        version: PROJECT_VERSION,
+        items: [],
+      },
+    [projectRecord],
+  )
+
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<SortField>('description')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
@@ -41,19 +47,13 @@ export function useProject() {
 
   const summary = useMemo(() => calculateProjectSummary(project), [project])
 
-  useEffect(() => {
-    saveProject(project)
-  }, [project])
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    saveTheme(theme)
-  }, [theme])
-
-  useEffect(() => {
-    void i18n.changeLanguage(locale)
-    saveLocale(locale)
-  }, [locale, i18n])
+  const patchProject = useCallback(
+    (patch: Partial<Pick<Project, 'projectName' | 'items'>>) => {
+      if (!projectRecord) return
+      updateProject(projectId, patch)
+    },
+    [projectId, projectRecord, updateProject],
+  )
 
   const resolveImportError = useCallback(
     (error: string): string => {
@@ -66,9 +66,10 @@ export function useProject() {
     [t],
   )
 
-  const setProjectName = useCallback((projectName: string) => {
-    setProject((prev) => ({ ...prev, projectName }))
-  }, [])
+  const setProjectName = useCallback(
+    (projectName: string) => patchProject({ projectName }),
+    [patchProject],
+  )
 
   const clearAll = useCallback(() => {
     const hasContent = project.items.length > 0 || project.projectName.trim().length > 0
@@ -76,11 +77,7 @@ export function useProject() {
       return
     }
 
-    setProject({
-      projectName: '',
-      version: PROJECT_VERSION,
-      items: [],
-    })
+    patchProject({ projectName: '', items: [] })
     setDeletedStack([])
     setSearch('')
     toast.success(t('toast.cleared'))
@@ -88,38 +85,32 @@ export function useProject() {
       projectNameInputRef.current?.focus()
       projectNameInputRef.current?.select()
     })
-  }, [project.items.length, project.projectName, t])
+  }, [patchProject, project.items.length, project.projectName, t])
 
-  const updateRun = useCallback((id: string, patch: Partial<CableRun>) => {
-    setProject((prev) => ({
-      ...prev,
-      items: prev.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-    }))
-  }, [])
+  const updateRun = useCallback(
+    (id: string, patch: Partial<CableRun>) => {
+      patchProject({
+        items: project.items.map((item) => (item.id === id ? { ...item, ...patch } : item)),
+      })
+    },
+    [patchProject, project.items],
+  )
 
   const addRun = useCallback(() => {
-    setProject((prev) => ({
-      ...prev,
-      items: [...prev.items, createEmptyRun()],
-    }))
+    patchProject({ items: [...project.items, createEmptyRun()] })
     toast.success(t('toast.added'))
-  }, [t])
+  }, [patchProject, project.items, t])
 
   const deleteRun = useCallback(
     (id: string) => {
-      setProject((prev) => {
-        const target = prev.items.find((item) => item.id === id)
-        if (target) {
-          setDeletedStack((stack) => [...stack, target])
-        }
-        return {
-          ...prev,
-          items: prev.items.filter((item) => item.id !== id),
-        }
-      })
+      const target = project.items.find((item) => item.id === id)
+      if (target) {
+        setDeletedStack((stack) => [...stack, target])
+      }
+      patchProject({ items: project.items.filter((item) => item.id !== id) })
       toast.success(t('toast.deleted'))
     },
-    [t],
+    [patchProject, project.items, t],
   )
 
   const undoDelete = useCallback(() => {
@@ -130,33 +121,28 @@ export function useProject() {
       }
       const next = [...stack]
       const restored = next.pop()!
-      setProject((prev) => ({
-        ...prev,
-        items: [...prev.items, restored],
-      }))
+      patchProject({ items: [...project.items, restored] })
       toast.success(t('toast.undone'))
       return next
     })
-  }, [t])
+  }, [patchProject, project.items, t])
 
   const duplicateRun = useCallback(
     (id: string) => {
-      setProject((prev) => {
-        const source = prev.items.find((item) => item.id === id)
-        if (!source) return prev
-        const copy: CableRun = {
-          ...source,
-          id: createId(),
-          description: `${source.description}${t('toast.copySuffix')}`,
-        }
-        const index = prev.items.findIndex((item) => item.id === id)
-        const items = [...prev.items]
-        items.splice(index + 1, 0, copy)
-        return { ...prev, items }
-      })
+      const source = project.items.find((item) => item.id === id)
+      if (!source) return
+      const copy: CableRun = {
+        ...source,
+        id: createId(),
+        description: `${source.description}${t('toast.copySuffix')}`,
+      }
+      const index = project.items.findIndex((item) => item.id === id)
+      const items = [...project.items]
+      items.splice(index + 1, 0, copy)
+      patchProject({ items })
       toast.success(t('toast.duplicated'))
     },
-    [t],
+    [patchProject, project.items, t],
   )
 
   const exportProject = useCallback(() => {
@@ -181,11 +167,14 @@ export function useProject() {
         toast.error(t('toast.importFailed', { reason: resolveImportError(result.error) }))
         return
       }
-      setProject(result.project)
+      patchProject({
+        projectName: result.project.projectName,
+        items: result.project.items,
+      })
       setDeletedStack([])
       toast.success(t('toast.imported'))
     },
-    [resolveImportError, t],
+    [patchProject, resolveImportError, t],
   )
 
   const triggerImport = useCallback(() => {
@@ -263,10 +252,6 @@ export function useProject() {
   return {
     project,
     summary,
-    theme,
-    setTheme,
-    locale,
-    setLocale,
     search,
     setSearch,
     sortField,
