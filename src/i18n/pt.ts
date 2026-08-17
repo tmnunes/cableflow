@@ -375,7 +375,7 @@ export const pt: TranslationSchema = {
     subtitle: 'Perfil da empresa e backup de dados.',
     backupTitle: 'Backup e restauro',
     backupDescription:
-      'Exporte ou importe todos os dados em JSON. Sem servidor — os ficheiros ficam no seu dispositivo.',
+      'Os seus projetos e catálogos ficam apenas neste browser — nenhum outro utilizador ou dispositivo os vê. Exporte um backup JSON para guardar ou transferir os dados; importe noutro browser ou dispositivo para restaurar.',
     exportBackup: 'Exportar backup completo',
     importBackup: 'Importar backup',
     backupExported: 'Backup completo exportado.',

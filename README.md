@@ -2,9 +2,21 @@
 
 https://cableflow-ruby.vercel.app/
 
-Client-side tool for electricians and electrical contractors: measure cable runs, manage a material catalog, and build professional quotes. No backend, no login, no database — everything runs in the browser with LocalStorage autosave and JSON import/export.
+Client-side tool for electricians and electrical contractors: measure cable runs, manage a material catalog, and build professional quotes. **No backend, no login, no database, no cloud sync** — everything runs in the browser and is stored only on **your** device.
 
 **Measure → calculate → catalog → quote → print.**
+
+## Your data is private and local
+
+CableFlow does **not** upload projects, materials, quotes, or settings to any server. Each browser (Chrome, Safari, phone, laptop, etc.) keeps its **own separate copy** in LocalStorage. Other users, other devices, and other browsers **cannot see your data**.
+
+There is no account linking devices. To **back up**, **move to another computer**, or **restore after clearing browser data**, you must:
+
+1. **Settings → Export full backup** (or export individual projects/catalogs as JSON)
+2. Save the `.json` file somewhere safe (disk, cloud drive, email to yourself)
+3. On the new browser/device → **Settings → Import backup**
+
+Without an export file, data lost when clearing site data or switching browsers **cannot be recovered**.
 
 ## Features
 
@@ -106,7 +118,7 @@ If cable lengths change later, the quote editor detects the difference and can *
 
 ## Data storage
 
-All data is stored locally in the browser (`localStorage`). Nothing is sent to a server.
+All data lives **only in your browser** on the device you are using. The hosted app (e.g. Vercel) serves the static files; it never receives or stores your projects, catalogs, or quotes.
 
 | Key                  | Content                    |
 |----------------------|----------------------------|
@@ -114,7 +126,16 @@ All data is stored locally in the browser (`localStorage`). Nothing is sent to a
 | `cableflow:theme`    | Light / dark preference    |
 | `cableflow:locale`   | `en` or `pt`               |
 
+**Per browser, per device.** Opening CableFlow in another browser or on another machine starts with empty data (or that browser’s own data) until you import a backup.
+
 Legacy installs with `cableflow:project` (v1) are migrated automatically on first load.
+
+### When to export
+
+- Before clearing browser data or uninstalling the browser
+- When switching computer, tablet, or phone
+- To keep a dated backup of catalogs and quotes
+- To copy your setup to a colleague’s machine (they import your JSON on their side — you still don’t share a cloud account)
 
 ## JSON import / export
 

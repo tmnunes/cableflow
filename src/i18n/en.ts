@@ -377,7 +377,7 @@ export const en = {
     subtitle: 'Company profile and data backup.',
     backupTitle: 'Backup & restore',
     backupDescription:
-      'Export or import all your data as JSON. No server required — files stay on your device.',
+      'Your projects and catalogs stay only in this browser — no other user or device can see them. Export a JSON backup to save or move your data; import it on another browser or device to restore.',
     exportBackup: 'Export full backup',
     importBackup: 'Import backup',
     backupExported: 'Full backup exported.',
