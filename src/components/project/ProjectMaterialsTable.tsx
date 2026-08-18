@@ -126,8 +126,8 @@ export function ProjectMaterialsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left text-xs font-medium text-muted-foreground">
-              <th className="min-w-[280px] px-3 py-2">{t('projectMaterials.material')}</th>
-              <th className="min-w-[420px] px-3 py-2">{t('projectMaterials.description')}</th>
+              <th className="min-w-[320px] px-3 py-2">{t('projectMaterials.material')}</th>
+              <th className="min-w-[320px] px-3 py-2">{t('projectMaterials.description')}</th>
               <th className="w-20 px-3 py-2">{t('projectMaterials.quantity')}</th>
               <th className="w-28 px-3 py-2">{t('projectMaterials.unit')}</th>
               <th className="w-28 px-3 py-2">{t('projectMaterials.unitPrice')}</th>
@@ -152,10 +152,11 @@ export function ProjectMaterialsTable({
                     <td className="px-2 py-1">
                       <div className="space-y-1.5">
                         <Input
+                          key={`${item.id}:${item.catalogMaterialId ?? ''}:${item.supplierId ?? ''}`}
                           list={`catalog-materials-${item.id}`}
                           defaultValue={selectedMaterialLabel(item)}
                           onChange={(e) => applyCatalogSelection(item.id, e.target.value)}
-                          className="h-8 text-sm"
+                          className="h-9 text-sm"
                           placeholder={t('projectMaterials.catalogSearch')}
                         />
                         <datalist id={`catalog-materials-${item.id}`}>
@@ -183,7 +184,7 @@ export function ProjectMaterialsTable({
                       <textarea
                         value={item.description}
                         onChange={(e) => onUpdate(item.id, { description: e.target.value })}
-                        className="min-h-[88px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        className="min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                         placeholder={t('projectMaterials.description')}
                         readOnly={isCableAuto}
                       />
