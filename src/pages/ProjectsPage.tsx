@@ -24,7 +24,7 @@ export function ProjectsPage() {
   )
 
   const handleNew = () => {
-    const project = createProject(t('projects.newProjectName'))
+    const project = createProject('')
     navigate(`/projects/${project.id}/cables`)
   }
 

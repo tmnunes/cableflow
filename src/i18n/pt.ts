@@ -190,6 +190,7 @@ export const pt: TranslationSchema = {
     catalogSearch: 'Pesquisar catálogo para esta linha…',
     catalogEmpty: 'Nenhum material encontrado no catálogo.',
     priceFromSelectedMaterial: 'Preço ligado ao material selecionado do fornecedor.',
+    rollPriceHint: '{{meters}} m / rolo → {{price}} / m',
     units: {
       unit: 'Unidade',
       meter: 'Metro',
@@ -225,6 +226,7 @@ export const pt: TranslationSchema = {
     deleteConfirm: 'Eliminar este material permanentemente?',
     nameRequired: 'O nome do material é obrigatório.',
     newMaterial: 'Novo material',
+    metersPerRoll: 'Metros por rolo',
     exported: 'Materiais exportados.',
     imported: 'Materiais importados.',
     categories: {

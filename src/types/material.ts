@@ -33,6 +33,8 @@ export interface Material {
   name: string
   category: MaterialCategory
   unit: MaterialUnit
+  /** Length contained in one roll, used to convert roll price into a per-metre price */
+  metersPerRoll?: number
   brand?: string
   model?: string
   description?: string

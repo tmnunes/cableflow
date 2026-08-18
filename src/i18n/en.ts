@@ -192,6 +192,7 @@ export const en = {
     catalogSearch: 'Search catalog for this line…',
     catalogEmpty: 'No materials found in catalog.',
     priceFromSelectedMaterial: 'Price linked to selected supplier material.',
+    rollPriceHint: '{{meters}} m / roll → {{price}} / m',
     units: {
       unit: 'Unit',
       meter: 'Metre',
@@ -227,6 +228,7 @@ export const en = {
     deleteConfirm: 'Delete this material permanently?',
     nameRequired: 'Material name is required.',
     newMaterial: 'New material',
+    metersPerRoll: 'Metres per roll',
     exported: 'Materials exported.',
     imported: 'Materials imported.',
     categories: {

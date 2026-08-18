@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input'
 import type { ProjectMaterialItem } from '@/types/cable'
 import type { Material } from '@/types/material'
 import type { Supplier } from '@/types/supplier'
+import { catalogPriceForLine, lineUnitForCatalogSelection } from '@/utils/pricing/catalogLine'
+import { formatCurrency } from '@/utils/money'
 
 const UNITS = ['unit', 'meter', 'roll', 'box', 'set', 'kg', 'other'] as const
 
@@ -57,10 +59,15 @@ export function ProjectMaterialsTable({
       maximumFractionDigits: 2,
     })
 
-  const applyCatalogSelection = (itemId: string, selected: Material) => {
-    onUpdate(itemId, {
-      unit: selected.unit,
-      unitPrice: selected.purchasePrice,
+  const applyCatalogSelection = (item: ProjectMaterialItem, selected: Material) => {
+    const unit = lineUnitForCatalogSelection(
+      selected,
+      item.unit,
+      Boolean(item.cableSourceKey),
+    )
+    onUpdate(item.id, {
+      unit,
+      unitPrice: catalogPriceForLine(selected, unit),
       catalogMaterialId: selected.id,
       supplierId: selected.supplierId,
     })
@@ -129,6 +136,11 @@ export function ProjectMaterialsTable({
               filtered.map((item) => {
                 const isCableAuto = Boolean(item.cableSourceKey)
                 const supplier = supplierName(item.supplierId)
+                const catalog = catalogMaterials.find((m) => m.id === item.catalogMaterialId)
+                const rollConverted =
+                  catalog?.unit === 'roll' &&
+                  (catalog.metersPerRoll ?? 0) > 0 &&
+                  item.unit === 'meter'
 
                 return (
                   <tr key={item.id} className="border-b border-border/50 align-top last:border-0">
@@ -139,7 +151,7 @@ export function ProjectMaterialsTable({
                         selectedId={item.catalogMaterialId}
                         locale={locale}
                         placeholder={t('projectMaterials.catalogSearch')}
-                        onSelect={(material) => applyCatalogSelection(item.id, material)}
+                        onSelect={(material) => applyCatalogSelection(item, material)}
                       />
                       <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-muted-foreground">
                         {supplier ? <span>{supplier}</span> : null}
@@ -176,7 +188,18 @@ export function ProjectMaterialsTable({
                     <td className="px-2 py-2">
                       <select
                         value={item.unit}
-                        onChange={(e) => onUpdate(item.id, { unit: e.target.value })}
+                        onChange={(e) => {
+                          const unit = e.target.value
+                          const catalogMaterial = catalogMaterials.find(
+                            (m) => m.id === item.catalogMaterialId,
+                          )
+                          onUpdate(item.id, {
+                            unit,
+                            ...(catalogMaterial
+                              ? { unitPrice: catalogPriceForLine(catalogMaterial, unit) }
+                              : {}),
+                          })
+                        }}
                         className="h-9 w-full min-w-0 rounded-md border border-input bg-background px-2 text-sm"
                       >
                         {UNITS.map((u) => (
@@ -199,6 +222,14 @@ export function ProjectMaterialsTable({
                         min={0}
                         step="0.01"
                       />
+                      {rollConverted && catalog?.metersPerRoll ? (
+                        <div className="mt-1 text-[10px] text-muted-foreground">
+                          {t('projectMaterials.rollPriceHint', {
+                            meters: catalog.metersPerRoll,
+                            price: formatCurrency(item.unitPrice, locale),
+                          })}
+                        </div>
+                      ) : null}
                     </td>
                     <td className="px-2 py-2 text-right font-medium tabular-nums">
                       {fmt(item.quantity * item.unitPrice)}
