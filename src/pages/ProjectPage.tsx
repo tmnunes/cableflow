@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
 import { Cable, Download, FileText, Package, Printer, Upload } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
@@ -32,7 +31,9 @@ function ProjectView({
   locale: string
 }) {
   const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<Tab>('cables')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedTab = searchParams.get('tab')
+  const activeTab: Tab = requestedTab === 'materials' ? 'materials' : 'cables'
   const {
     project,
     summary,
@@ -65,6 +66,16 @@ function ProjectView({
     duplicateMaterial,
   } = useProject(projectId)
   const { materials: catalogMaterials, suppliers } = useAppData()
+
+  const setActiveTab = (tab: Tab) => {
+    const next = new URLSearchParams(searchParams)
+    if (tab === 'cables') {
+      next.delete('tab')
+    } else {
+      next.set('tab', tab)
+    }
+    setSearchParams(next, { replace: true })
+  }
 
   return (
     <div className="space-y-4">
@@ -116,6 +127,7 @@ function ProjectView({
       {/* Tabs */}
       <div className="flex gap-1 border-b border-border/70 no-print">
         <button
+          type="button"
           onClick={() => setActiveTab('cables')}
           className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'cables'
@@ -130,6 +142,7 @@ function ProjectView({
           </span>
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('materials')}
           className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'materials'
