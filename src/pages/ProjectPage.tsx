@@ -34,6 +34,7 @@ function ProjectView({
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
   const activeTab: Tab = requestedTab === 'materials' ? 'materials' : 'cables'
+
   const {
     project,
     summary,
@@ -65,6 +66,7 @@ function ProjectView({
     deleteMaterial,
     duplicateMaterial,
   } = useProject(projectId)
+
   const { materials: catalogMaterials, suppliers } = useAppData()
 
   const setActiveTab = (tab: Tab) => {
@@ -124,7 +126,6 @@ function ProjectView({
         canUndo={canUndo}
       />
 
-      {/* Tabs */}
       <div className="flex gap-1 border-b border-border/70 no-print">
         <button
           type="button"
@@ -184,9 +185,7 @@ function ProjectView({
         <ProjectMaterialsTable
           items={projectMaterials}
           onAdd={addMaterial}
-          onAddFromCatalog={(material, _supplier, qty) =>
-            addMaterialFromCatalog(material, qty)
-          }
+          onAddFromCatalog={(material, _supplier, qty) => addMaterialFromCatalog(material, qty)}
           onUpdate={updateMaterial}
           onDelete={deleteMaterial}
           onDuplicate={duplicateMaterial}

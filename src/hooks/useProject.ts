@@ -1,12 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import type { CableRun, ConductorCode, Project, ProjectMaterialItem, SortDirection, SortField } from '@/types'
+import type {
+  CableRun,
+  ConductorCode,
+  Material,
+  Project,
+  ProjectMaterialItem,
+  SortDirection,
+  SortField,
+} from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
 import { createId, downloadJson, slugifyFilename } from '@/utils/cn'
-import { toExportPayload, parseImportJson } from '@/services/importExport'
+import { parseImportJson, toExportPayload } from '@/services/importExport'
 
 const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
   F: 'Phase (F)',
@@ -25,33 +33,33 @@ function buildCableMaterials(
   existing: ProjectMaterialItem[],
   tFn: (key: string, opts?: Record<string, unknown>) => string,
 ): ProjectMaterialItem[] {
-  const newKeys = new Set<string>()
-  const byKey = new Map(existing.filter((m) => m.cableSourceKey).map((m) => [m.cableSourceKey!, m]))
-
+  const byKey = new Map(
+    existing.filter((m) => m.cableSourceKey).map((m) => [m.cableSourceKey!, m]),
+  )
   const cableItems: ProjectMaterialItem[] = []
 
   for (const section of summary.bySection) {
     for (const cond of section.conductors) {
       const key = cableSourceKey(section.sectionMm2, cond.code)
-      newKeys.add(key)
       const prev = byKey.get(key)
       if (prev) {
         cableItems.push({ ...prev, quantity: cond.meters })
-      } else {
-        const label = CONDUCTOR_LABELS[cond.code] ?? cond.code
-        cableItems.push({
-          id: createId(),
-          description: tFn('projectMaterials.cableAutoDescription', {
-            section: section.sectionMm2,
-            conductor: label,
-          }),
-          quantity: cond.meters,
-          unit: 'meter',
-          unitPrice: 0,
-          notes: '',
-          cableSourceKey: key,
-        })
+        continue
       }
+
+      const label = CONDUCTOR_LABELS[cond.code] ?? cond.code
+      cableItems.push({
+        id: createId(),
+        description: tFn('projectMaterials.cableAutoDescription', {
+          section: section.sectionMm2,
+          conductor: label,
+        }),
+        quantity: cond.meters,
+        unit: 'meter',
+        unitPrice: 0,
+        notes: '',
+        cableSourceKey: key,
+      })
     }
   }
 
@@ -104,19 +112,25 @@ export function useProject(projectId: string) {
     if (summaryKey === prevSummaryRef.current) return
     prevSummaryRef.current = summaryKey
 
-    if (summary.bySection.length === 0 && !(project.materials ?? []).some((m) => m.cableSourceKey)) {
+    if (
+      summary.bySection.length === 0 &&
+      !(project.materials ?? []).some((m) => m.cableSourceKey)
+    ) {
       return
     }
 
     const currentMaterials = project.materials ?? []
     const synced = buildCableMaterials(summary, currentMaterials, t)
+    const currentKeys = currentMaterials
+      .map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`)
+      .join(';')
+    const syncedKeys = synced
+      .map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`)
+      .join(';')
 
-    const currentKeys = currentMaterials.map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`).join(';')
-    const syncedKeys = synced.map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`).join(';')
     if (currentKeys === syncedKeys) return
-
     updateProject(projectId, { materials: synced })
-  }, [summary, project.materials, projectId, updateProject, t])
+  }, [summary, project.materials, projectId, t, updateProject])
 
   const patchProject = useCallback(
     (patch: Partial<Pick<Project, 'projectName' | 'items' | 'materials'>>) => {
@@ -143,7 +157,11 @@ export function useProject(projectId: string) {
   )
 
   const clearAll = useCallback(() => {
-    const hasContent = project.items.length > 0 || project.projectName.trim().length > 0
+    const hasContent =
+      project.items.length > 0 ||
+      project.projectName.trim().length > 0 ||
+      (project.materials?.length ?? 0) > 0
+
     if (hasContent && !window.confirm(t('header.clearAllConfirm'))) {
       return
     }
@@ -156,7 +174,7 @@ export function useProject(projectId: string) {
       projectNameInputRef.current?.focus()
       projectNameInputRef.current?.select()
     })
-  }, [patchProject, project.items.length, project.projectName, t])
+  }, [patchProject, project.items.length, project.materials?.length, project.projectName, t])
 
   const updateRun = useCallback(
     (id: string, patch: Partial<CableRun>) => {
@@ -230,6 +248,26 @@ export function useProject(projectId: string) {
     patchProject({ materials: [...projectMaterials, item] })
   }, [patchProject, projectMaterials])
 
+  const addMaterialFromCatalog = useCallback(
+    (
+      catalogMaterial: Pick<Material, 'id' | 'name' | 'unit' | 'purchasePrice' | 'supplierId'>,
+      quantity: number,
+    ) => {
+      const item: ProjectMaterialItem = {
+        id: createId(),
+        description: catalogMaterial.name,
+        quantity,
+        unit: catalogMaterial.unit,
+        unitPrice: catalogMaterial.purchasePrice,
+        notes: '',
+        catalogMaterialId: catalogMaterial.id,
+        supplierId: catalogMaterial.supplierId,
+      }
+      patchProject({ materials: [...projectMaterials, item] })
+    },
+    [patchProject, projectMaterials],
+  )
+
   const updateMaterial = useCallback(
     (id: string, patch: Partial<ProjectMaterialItem>) => {
       patchProject({
@@ -259,31 +297,13 @@ export function useProject(projectId: string) {
     [patchProject, projectMaterials],
   )
 
-  const addMaterialFromCatalog = useCallback(
-    (catalogMaterial: { id: string; name: string; unit: string; purchasePrice: number; supplierId?: string }, quantity: number) => {
-      const item: ProjectMaterialItem = {
-        id: createId(),
-        description: catalogMaterial.name,
-        quantity,
-        unit: catalogMaterial.unit,
-        unitPrice: catalogMaterial.purchasePrice,
-        notes: '',
-        catalogMaterialId: catalogMaterial.id,
-        supplierId: catalogMaterial.supplierId,
-      }
-      patchProject({ materials: [...projectMaterials, item] })
-    },
-    [patchProject, projectMaterials],
-  )
-
   const exportProject = useCallback(() => {
     if (!project.projectName.trim()) {
       toast.error(t('toast.projectNameRequired'))
       projectNameInputRef.current?.focus()
       return
     }
-    const payload = toExportPayload(project)
-    downloadJson(`${slugifyFilename(project.projectName)}.json`, payload)
+    downloadJson(`${slugifyFilename(project.projectName)}.json`, toExportPayload(project))
     toast.success(t('toast.exported'))
   }, [project, t])
 
@@ -336,6 +356,7 @@ export function useProject(projectId: string) {
   const filteredSortedItems = useMemo(() => {
     const q = search.trim().toLowerCase()
     let items = project.items
+
     if (q) {
       items = items.filter((item) =>
         [item.description, item.conduit, item.spec, item.notes, item.type]
@@ -377,6 +398,7 @@ export function useProject(projectId: string) {
         undoDelete()
       }
     }
+
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [exportProject, triggerImport, undoDelete])
@@ -397,7 +419,10 @@ export function useProject(projectId: string) {
     deleteRun,
     undoDelete,
     canUndo: deletedStack.length > 0,
-    canClear: project.items.length > 0 || project.projectName.trim().length > 0,
+    canClear:
+      project.items.length > 0 ||
+      project.projectName.trim().length > 0 ||
+      projectMaterials.length > 0,
     duplicateRun,
     exportProject,
     printProject,

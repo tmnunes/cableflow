@@ -13,7 +13,11 @@ const UNITS = ['unit', 'meter', 'roll', 'box', 'set', 'kg', 'other'] as const
 interface Props {
   items: ProjectMaterialItem[]
   onAdd: () => void
-  onAddFromCatalog: (material: Material, supplier: Supplier | undefined, quantity: number) => void
+  onAddFromCatalog: (
+    material: Material,
+    supplier: Supplier | undefined,
+    quantity: number,
+  ) => void
   onUpdate: (id: string, patch: Partial<ProjectMaterialItem>) => void
   onDelete: (id: string) => void
   onDuplicate: (id: string) => void
@@ -42,8 +46,7 @@ export function ProjectMaterialsTable({
     if (!q) return items
     return items.filter(
       (m) =>
-        m.description.toLowerCase().includes(q) ||
-        m.notes.toLowerCase().includes(q),
+        m.description.toLowerCase().includes(q) || m.notes.toLowerCase().includes(q),
     )
   }, [items, search])
 
@@ -58,8 +61,7 @@ export function ProjectMaterialsTable({
       maximumFractionDigits: 2,
     })
 
-  const supplierName = (id?: string) =>
-    suppliers.find((s) => s.id === id)?.name
+  const supplierName = (id?: string) => suppliers.find((s) => s.id === id)?.name
 
   return (
     <div className="space-y-3">
@@ -74,11 +76,11 @@ export function ProjectMaterialsTable({
           />
         </div>
         <div className="flex items-center gap-2">
-          {items.length > 0 && (
+          {items.length > 0 ? (
             <span className="text-sm font-medium text-muted-foreground">
               {t('projectMaterials.totalCost')}: {fmt(totalCost)}
             </span>
-          )}
+          ) : null}
           <Button size="sm" variant="outline" onClick={() => setPickerOpen(true)}>
             <Library className="h-4 w-4" />
             {t('projectMaterials.fromCatalog')}
@@ -95,27 +97,26 @@ export function ProjectMaterialsTable({
           <thead>
             <tr className="border-b bg-muted/50 text-left text-xs font-medium text-muted-foreground">
               <th className="px-3 py-2">{t('projectMaterials.description')}</th>
-              <th className="px-3 py-2 w-20">{t('projectMaterials.quantity')}</th>
-              <th className="px-3 py-2 w-28">{t('projectMaterials.unit')}</th>
-              <th className="px-3 py-2 w-28">{t('projectMaterials.unitPrice')}</th>
-              <th className="px-3 py-2 w-28">{t('projectMaterials.total')}</th>
+              <th className="w-20 px-3 py-2">{t('projectMaterials.quantity')}</th>
+              <th className="w-28 px-3 py-2">{t('projectMaterials.unit')}</th>
+              <th className="w-28 px-3 py-2">{t('projectMaterials.unitPrice')}</th>
+              <th className="w-28 px-3 py-2">{t('projectMaterials.total')}</th>
               <th className="px-3 py-2">{t('projectMaterials.notes')}</th>
-              <th className="px-3 py-2 w-20">{t('projectMaterials.actions')}</th>
+              <th className="w-20 px-3 py-2">{t('projectMaterials.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-sm text-muted-foreground">
-                  {items.length === 0
-                    ? t('projectMaterials.empty')
-                    : t('table.emptySearch')}
+                  {items.length === 0 ? t('projectMaterials.empty') : t('table.emptySearch')}
                 </td>
               </tr>
             ) : (
               filtered.map((item) => {
-                const isCableAuto = !!item.cableSourceKey
+                const isCableAuto = Boolean(item.cableSourceKey)
                 const supplier = supplierName(item.supplierId)
+
                 return (
                   <tr key={item.id} className="border-b border-border/50 last:border-0">
                     <td className="px-2 py-1">
@@ -127,14 +128,16 @@ export function ProjectMaterialsTable({
                           placeholder={t('projectMaterials.description')}
                           readOnly={isCableAuto}
                         />
-                        {(supplier || isCableAuto) && (
+                        {supplier || isCableAuto ? (
                           <div className="mt-0.5 flex gap-1.5 text-[10px] text-muted-foreground">
-                            {supplier && <span>{supplier}</span>}
-                            {isCableAuto && (
-                              <span className="rounded bg-primary/10 px-1 text-primary">auto</span>
-                            )}
+                            {supplier ? <span>{supplier}</span> : null}
+                            {isCableAuto ? (
+                              <span className="rounded bg-primary/10 px-1 text-primary">
+                                auto
+                              </span>
+                            ) : null}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     </td>
                     <td className="px-2 py-1">
@@ -192,28 +195,26 @@ export function ProjectMaterialsTable({
                       />
                     </td>
                     <td className="px-2 py-1">
-                      <div className="flex gap-0.5">
-                        {!isCableAuto && (
-                          <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => onDuplicate(item.id)}
-                            >
-                              <Copy className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7 text-destructive hover:text-destructive"
-                              onClick={() => onDelete(item.id)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                      {!isCableAuto ? (
+                        <div className="flex gap-0.5">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7"
+                            onClick={() => onDuplicate(item.id)}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-destructive hover:text-destructive"
+                            onClick={() => onDelete(item.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ) : null}
                     </td>
                   </tr>
                 )
@@ -223,7 +224,7 @@ export function ProjectMaterialsTable({
         </table>
       </div>
 
-      {pickerOpen && (
+      {pickerOpen ? (
         <CatalogPickerDialog
           materials={catalogMaterials}
           suppliers={suppliers}
@@ -234,7 +235,7 @@ export function ProjectMaterialsTable({
           }}
           onClose={() => setPickerOpen(false)}
         />
-      )}
+      ) : null}
     </div>
   )
 }
@@ -256,10 +257,7 @@ function CatalogPickerDialog({
   const [search, setSearch] = useState('')
   const [quantity, setQuantity] = useState('1')
 
-  const supplierMap = useMemo(
-    () => new Map(suppliers.map((s) => [s.id, s])),
-    [suppliers],
-  )
+  const supplierMap = useMemo(() => new Map(suppliers.map((s) => [s.id, s])), [suppliers])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -325,34 +323,34 @@ function CatalogPickerDialog({
               const supplier = material.supplierId
                 ? supplierMap.get(material.supplierId)
                 : undefined
+
               return (
                 <button
                   key={material.id}
                   type="button"
                   className="flex w-full items-center justify-between gap-3 border-b border-border/50 px-4 py-3 text-left hover:bg-muted/40"
-                  onClick={() => {
-                    onSelect(material, supplier, Number(quantity) || 1)
-                  }}
+                  onClick={() => onSelect(material, supplier, Number(quantity) || 1)}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{material.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {t(`materials.categories.${material.category}`)}
-                      {material.brand && <> · {material.brand}</>}
-                      {supplier && (
-                        <> · <span className="font-medium">{supplier.name}</span></>
-                      )}
+                      {material.brand ? <> · {material.brand}</> : null}
+                      {supplier ? (
+                        <>
+                          {' '}
+                          · <span className="font-medium">{supplier.name}</span>
+                        </>
+                      ) : null}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-medium tabular-nums">
                       {formatCurrency(material.purchasePrice, locale)}
                     </p>
-                    {material.unit && (
-                      <p className="text-[10px] text-muted-foreground">
-                        /{t(`materials.units.${material.unit}`)}
-                      </p>
-                    )}
+                    <p className="text-[10px] text-muted-foreground">
+                      /{t(`materials.units.${material.unit}`)}
+                    </p>
                   </div>
                 </button>
               )
