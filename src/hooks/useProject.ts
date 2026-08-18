@@ -148,7 +148,7 @@ export function useProject(projectId: string) {
       return
     }
 
-    patchProject({ projectName: '', items: [] })
+    patchProject({ projectName: '', items: [], materials: [] })
     setDeletedStack([])
     setSearch('')
     toast.success(t('toast.cleared'))
@@ -301,6 +301,7 @@ export function useProject(projectId: string) {
       patchProject({
         projectName: result.project.projectName,
         items: result.project.items,
+        materials: result.project.materials ?? [],
       })
       setDeletedStack([])
       toast.success(t('toast.imported'))
