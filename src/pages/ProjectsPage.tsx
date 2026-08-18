@@ -118,6 +118,9 @@ export function ProjectsPage() {
                   </Link>
                   <p className="text-xs text-muted-foreground">
                     {t('projects.runsCount', { count: project.items.length })}
+                    {(project.materials?.length ?? 0) > 0 && (
+                      <> · {t('projects.materialsCount', { count: project.materials!.length })}</>
+                    )}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-1">

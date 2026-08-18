@@ -22,6 +22,7 @@ export function createProjectRecord(
     projectName: partial.projectName,
     version: partial.version ?? PROJECT_VERSION,
     items: partial.items,
+    materials: partial.materials ?? [],
     createdAt: partial.createdAt ?? timestamp,
     updatedAt: partial.updatedAt ?? timestamp,
   }

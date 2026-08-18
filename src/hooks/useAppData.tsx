@@ -44,7 +44,7 @@ interface AppDataContextValue {
   projects: ProjectRecord[]
   activeProject: ProjectRecord | undefined
   createProject: (name?: string) => ProjectRecord
-  updateProject: (id: string, patch: Partial<Pick<ProjectRecord, 'projectName' | 'items'>>) => void
+  updateProject: (id: string, patch: Partial<Pick<ProjectRecord, 'projectName' | 'items' | 'materials'>>) => void
   deleteProject: (id: string) => void
   duplicateProject: (id: string) => ProjectRecord | undefined
   importProject: (project: Omit<ProjectRecord, 'id' | 'createdAt' | 'updatedAt'>) => ProjectRecord
@@ -123,7 +123,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const updateProject = useCallback(
-    (id: string, patch: Partial<Pick<ProjectRecord, 'projectName' | 'items'>>) => {
+    (id: string, patch: Partial<Pick<ProjectRecord, 'projectName' | 'items' | 'materials'>>) => {
       setData((prev) => ({
         ...prev,
         projects: prev.projects.map((p) =>
@@ -160,6 +160,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         projectName: `${source.projectName} (copy)`,
         version: source.version,
         items: source.items.map((item) => ({ ...item, id: createId() })),
+        materials: (source.materials ?? []).map((m) => ({ ...m, id: createId() })),
       })
       const duplicated = copy
       return {
