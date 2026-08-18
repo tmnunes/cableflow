@@ -1,7 +1,7 @@
 import type { AppData, AppDataExport, MaterialsExport, SuppliersExport } from '@/types/app'
 import { DATA_VERSION } from '@/types/app'
 import type { Material } from '@/types/material'
-import type { Project, ProjectExport } from '@/types/cable'
+import type { Project, ProjectExport, ProjectMaterialItem } from '@/types/cable'
 import type { Supplier } from '@/types/supplier'
 import { PROJECT_VERSION } from '@/services/storage/keys'
 import { isCircuitType } from '@/utils/validation'
@@ -22,7 +22,7 @@ export type EntityImportResult<T> =
   | { ok: false; error: string }
 
 export function toExportPayload(project: Project): ProjectExport {
-  return {
+  const payload: ProjectExport = {
     projectName: project.projectName,
     version: PROJECT_VERSION,
     items: project.items.map(({ description, distance, type, conduit, spec, notes }) => ({
@@ -34,6 +34,16 @@ export function toExportPayload(project: Project): ProjectExport {
       notes: notes ?? '',
     })),
   }
+  if (project.materials && project.materials.length > 0) {
+    payload.materials = project.materials.map(({ description, quantity, unit, unitPrice, notes }) => ({
+      description,
+      quantity,
+      unit,
+      unitPrice,
+      notes: notes ?? '',
+    }))
+  }
+  return payload
 }
 
 export function toAppDataExport(data: AppData): AppDataExport {
@@ -179,12 +189,30 @@ export function validateAndNormalize(data: unknown): ImportResult {
     items.push(result.item)
   }
 
+  const materials: ProjectMaterialItem[] = []
+  if (Array.isArray(obj.materials)) {
+    for (const mat of obj.materials) {
+      if (mat && typeof mat === 'object' && !Array.isArray(mat)) {
+        const m = mat as Record<string, unknown>
+        materials.push({
+          id: typeof m.id === 'string' && m.id ? m.id : createId(),
+          description: typeof m.description === 'string' ? m.description : '',
+          quantity: typeof m.quantity === 'number' && Number.isFinite(m.quantity) ? m.quantity : 1,
+          unit: typeof m.unit === 'string' ? m.unit : 'unit',
+          unitPrice: typeof m.unitPrice === 'number' && Number.isFinite(m.unitPrice) ? m.unitPrice : 0,
+          notes: typeof m.notes === 'string' ? m.notes : '',
+        })
+      }
+    }
+  }
+
   return {
     ok: true,
     project: {
       projectName: obj.projectName.trim(),
       version: typeof obj.version === 'number' ? obj.version : PROJECT_VERSION,
       items,
+      materials,
     },
   }
 }

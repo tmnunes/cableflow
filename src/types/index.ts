@@ -9,6 +9,7 @@ export type {
   SpecParseResult,
   SpecParseError,
   SpecParseOutcome,
+  ProjectMaterialItem,
   CableRun,
   Project,
   ProjectRecord,

@@ -37,6 +37,15 @@ export interface SpecParseError {
 
 export type SpecParseOutcome = SpecParseResult | SpecParseError
 
+export interface ProjectMaterialItem {
+  id: string
+  description: string
+  quantity: number
+  unit: string
+  unitPrice: number
+  notes: string
+}
+
 export interface CableRun {
   id: string
   description: string
@@ -52,6 +61,7 @@ export interface Project {
   projectName: string
   version: number
   items: CableRun[]
+  materials?: ProjectMaterialItem[]
 }
 
 /** Project with identity and timestamps (v2 storage) */
@@ -72,6 +82,14 @@ export interface ProjectExport {
     type: CircuitType
     conduit: number
     spec: string
+    notes?: string
+  }>
+  materials?: Array<{
+    id?: string
+    description: string
+    quantity: number
+    unit: string
+    unitPrice: number
     notes?: string
   }>
 }

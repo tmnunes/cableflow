@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import { Download, Eraser, Printer, Undo2, Upload } from 'lucide-react'
+import { Eraser, Undo2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,9 +15,6 @@ interface AppHeaderProps {
   projectName: string
   onProjectNameChange: (value: string) => void
   projectNameInputRef: RefObject<HTMLInputElement | null>
-  onImport: () => void
-  onExport: () => void
-  onPrint: () => void
   onClearAll: () => void
   canClear: boolean
   onUndo: () => void
@@ -28,9 +25,6 @@ export function AppHeader({
   projectName,
   onProjectNameChange,
   projectNameInputRef,
-  onImport,
-  onExport,
-  onPrint,
   onClearAll,
   canClear,
   onUndo,
@@ -102,23 +96,8 @@ export function AppHeader({
             <Eraser />
             {t('header.clearAll')}
           </Button>
-          <Button variant="outline" onClick={onImport}>
-            <Upload />
-            {t('header.import')}
-          </Button>
-          <Button variant="outline" onClick={onPrint}>
-            <Printer />
-            {t('header.print')}
-          </Button>
-          <Button onClick={onExport}>
-            <Download />
-            {t('header.export')}
-          </Button>
         </div>
       </div>
-      <p className="border-t border-border/50 px-4 py-1.5 text-center text-[11px] text-muted-foreground sm:px-6 sm:text-left no-print">
-        {t('shortcuts.hint')}
-      </p>
     </header>
   )
 }

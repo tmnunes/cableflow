@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import type { CableRun, Project, SortDirection, SortField } from '@/types'
+import type { CableRun, Project, ProjectMaterialItem, SortDirection, SortField } from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
@@ -48,7 +48,7 @@ export function useProject(projectId: string) {
   const summary = useMemo(() => calculateProjectSummary(project), [project])
 
   const patchProject = useCallback(
-    (patch: Partial<Pick<Project, 'projectName' | 'items'>>) => {
+    (patch: Partial<Pick<Project, 'projectName' | 'items' | 'materials'>>) => {
       if (!projectRecord) return
       updateProject(projectId, patch)
     },
@@ -143,6 +143,49 @@ export function useProject(projectId: string) {
       toast.success(t('toast.duplicated'))
     },
     [patchProject, project.items, t],
+  )
+
+  const projectMaterials = useMemo(() => project.materials ?? [], [project.materials])
+
+  const addMaterial = useCallback(() => {
+    const item: ProjectMaterialItem = {
+      id: createId(),
+      description: '',
+      quantity: 1,
+      unit: 'unit',
+      unitPrice: 0,
+      notes: '',
+    }
+    patchProject({ materials: [...projectMaterials, item] })
+  }, [patchProject, projectMaterials])
+
+  const updateMaterial = useCallback(
+    (id: string, patch: Partial<ProjectMaterialItem>) => {
+      patchProject({
+        materials: projectMaterials.map((m) => (m.id === id ? { ...m, ...patch } : m)),
+      })
+    },
+    [patchProject, projectMaterials],
+  )
+
+  const deleteMaterial = useCallback(
+    (id: string) => {
+      patchProject({ materials: projectMaterials.filter((m) => m.id !== id) })
+    },
+    [patchProject, projectMaterials],
+  )
+
+  const duplicateMaterial = useCallback(
+    (id: string) => {
+      const source = projectMaterials.find((m) => m.id === id)
+      if (!source) return
+      const copy: ProjectMaterialItem = { ...source, id: createId() }
+      const index = projectMaterials.findIndex((m) => m.id === id)
+      const items = [...projectMaterials]
+      items.splice(index + 1, 0, copy)
+      patchProject({ materials: items })
+    },
+    [patchProject, projectMaterials],
   )
 
   const exportProject = useCallback(() => {
@@ -273,6 +316,11 @@ export function useProject(projectId: string) {
     onFileSelected,
     fileInputRef,
     projectNameInputRef,
+    projectMaterials,
+    addMaterial,
+    updateMaterial,
+    deleteMaterial: deleteMaterial as (id: string) => void,
+    duplicateMaterial,
   }
 }
 
