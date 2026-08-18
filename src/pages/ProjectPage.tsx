@@ -59,10 +59,12 @@ function ProjectView({
     projectNameInputRef,
     projectMaterials,
     addMaterial,
+    addMaterialFromCatalog,
     updateMaterial,
     deleteMaterial,
     duplicateMaterial,
   } = useProject(projectId)
+  const { materials: catalogMaterials, suppliers } = useAppData()
 
   return (
     <div className="space-y-4">
@@ -169,10 +171,15 @@ function ProjectView({
         <ProjectMaterialsTable
           items={projectMaterials}
           onAdd={addMaterial}
+          onAddFromCatalog={(material, _supplier, qty) =>
+            addMaterialFromCatalog(material, qty)
+          }
           onUpdate={updateMaterial}
           onDelete={deleteMaterial}
           onDuplicate={duplicateMaterial}
           locale={locale}
+          catalogMaterials={catalogMaterials}
+          suppliers={suppliers}
         />
       )}
     </div>
