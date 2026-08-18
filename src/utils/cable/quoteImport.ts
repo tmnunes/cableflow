@@ -1,4 +1,5 @@
-import type { ProjectRecord } from '@/types/cable'
+import type { ProjectMaterialItem, ProjectRecord } from '@/types/cable'
+import { parseCableMaterialSourceKey } from '@/types/cable'
 import type { ConductorCode } from '@/types/cable'
 import type { Material } from '@/types/material'
 import type {
@@ -11,6 +12,7 @@ import { cableAggregateKey } from '@/types/quote'
 import { getSectionMm2, calculateRunConductors } from '@/utils/calculations'
 import { roundMoney } from '@/utils/money'
 import { calculateMarginPrice } from '@/utils/pricing'
+import { catalogPriceForLine } from '@/utils/pricing/catalogLine'
 import { recalculateQuoteItem } from '@/utils/quotes'
 import { createId } from '@/utils/cn'
 
@@ -99,9 +101,11 @@ export function buildQuoteItemsFromAggregatedMapping(
     const material = materialMap.get(materialId)
     if (!material) continue
 
-    const purchaseUnitPrice = material.purchasePrice
+    const purchaseUnitPrice = catalogPriceForLine(material, 'meter')
     const saleUnitPrice =
-      material.salePrice ?? calculateMarginPrice(purchaseUnitPrice, defaultMarginPercent)
+      material.salePrice && material.unit !== 'roll'
+        ? material.salePrice
+        : calculateMarginPrice(purchaseUnitPrice, defaultMarginPercent)
 
     items.push(
       recalculateQuoteItem({
@@ -110,7 +114,7 @@ export function buildQuoteItemsFromAggregatedMapping(
         description: `${material.name} (${req.conductorCode}, ${req.sectionMm2} mm²)`,
         category: material.category,
         quantity: req.meters,
-        unit: material.unit === 'meter' ? 'meter' : material.unit,
+        unit: 'meter',
         purchaseUnitPrice,
         saleUnitPrice,
         purchaseTotal: 0,
@@ -261,4 +265,58 @@ export function syncAggregatedCableQuantities(
 export function syncQuoteCableItemsFromProject(quote: Quote, project: ProjectRecord): QuoteItem[] {
   const requirements = aggregateCableRequirements(project)
   return syncAggregatedCableQuantities(quote.items, requirements)
+}
+
+export function cableSelectionsFromProject(project: ProjectRecord): Record<string, string> {
+  const selections: Record<string, string> = {}
+  for (const item of project.materials ?? []) {
+    if (!item.cableSourceKey || !item.catalogMaterialId) continue
+    const parsed = parseCableMaterialSourceKey(item.cableSourceKey)
+    if (!parsed) continue
+    selections[cableAggregateKey(parsed.sectionMm2, parsed.conductorCode)] = item.catalogMaterialId
+  }
+  return selections
+}
+
+export function extraProjectMaterials(project: ProjectRecord): ProjectMaterialItem[] {
+  return (project.materials ?? []).filter((item) => !item.cableSourceKey)
+}
+
+export function buildQuoteItemsFromProjectMaterials(
+  items: ProjectMaterialItem[],
+  materials: Material[],
+  defaultMarginPercent: number,
+): QuoteItem[] {
+  const materialMap = new Map(materials.map((m) => [m.id, m]))
+  const quoteItems: QuoteItem[] = []
+
+  for (const item of items) {
+    const material = item.catalogMaterialId ? materialMap.get(item.catalogMaterialId) : undefined
+    const unit = item.unit || material?.unit || 'unit'
+    const purchaseUnitPrice = material
+      ? catalogPriceForLine(material, unit)
+      : item.unitPrice
+    const saleUnitPrice =
+      material?.salePrice && material.unit !== 'roll'
+        ? material.salePrice
+        : calculateMarginPrice(purchaseUnitPrice, defaultMarginPercent)
+
+    quoteItems.push(
+      recalculateQuoteItem({
+        id: createId(),
+        materialId: material?.id,
+        description: item.description || material?.name || '',
+        category: material?.category ?? 'other',
+        quantity: item.quantity,
+        unit,
+        purchaseUnitPrice,
+        saleUnitPrice,
+        purchaseTotal: 0,
+        saleTotal: 0,
+        source: { source: 'manual' },
+      }),
+    )
+  }
+
+  return quoteItems
 }

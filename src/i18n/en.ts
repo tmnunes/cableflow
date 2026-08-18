@@ -323,7 +323,9 @@ export const en = {
       validUntil: 'Valid until',
       status: 'Status',
       taxRate: 'VAT %',
-      discount: 'Discount (€)',
+      discount: 'Discount',
+      discountAmount: 'Amount (€)',
+      discountPercent: 'Percent (%)',
       globalMargin: 'Global margin %',
     },
     items: {
@@ -409,6 +411,10 @@ export const en = {
       aggregatedHint:
         'Cable lengths are summed by conductor type and section — not per circuit description.',
       runCount: '{{count}} circuits',
+      alreadyMapped: 'Already linked from the project',
+      extraMaterials: 'Other project materials',
+      extraCount: '{{count}} extra items will be added automatically.',
+      readyHint: 'Materials already selected in the project will be used as-is.',
     },
   },
   settings: {

@@ -10,6 +10,7 @@ import type {
   SortDirection,
   SortField,
 } from '@/types'
+import { cableMaterialSourceKey } from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
@@ -25,10 +26,6 @@ const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
   T: 'Earth (T)',
 }
 
-function cableSourceKey(sectionMm2: number, code: ConductorCode): string {
-  return `cable:${sectionMm2}:${code}`
-}
-
 function buildCableMaterials(
   summary: ReturnType<typeof calculateProjectSummary>,
   existing: ProjectMaterialItem[],
@@ -41,7 +38,7 @@ function buildCableMaterials(
 
   for (const section of summary.bySection) {
     for (const cond of section.conductors) {
-      const key = cableSourceKey(section.sectionMm2, cond.code)
+      const key = cableMaterialSourceKey(section.sectionMm2, cond.code)
       const prev = byKey.get(key)
       if (prev) {
         cableItems.push({ ...prev, quantity: cond.meters })

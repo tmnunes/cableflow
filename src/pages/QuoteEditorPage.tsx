@@ -23,13 +23,13 @@ import {
 } from '@/components/ui/select'
 import { useAppData } from '@/hooks/useAppData'
 import type { Quote, QuoteStatus } from '@/types'
+import { cn } from '@/utils/cn'
 import {
   aggregateCableRequirements,
   diffAggregatedCableQuantities,
   syncQuoteCableItemsFromProject,
 } from '@/utils/cable/quoteImport'
 import { applyGlobalMarginToQuote, calculateQuoteTotals, normalizeQuote } from '@/utils/quotes'
-import { parseMoneyInput } from '@/utils/money'
 
 const STATUSES: QuoteStatus[] = ['draft', 'sent', 'accepted', 'rejected', 'expired']
 
@@ -185,49 +185,54 @@ export function QuoteEditorPage() {
               </CardContent>
             </Card>
 
-            <div className="grid gap-3 sm:grid-cols-4">
-              <Field label={t('quotes.fields.date')}>
-                <Input
-                  type="date"
-                  value={quote.date}
-                  onChange={(e) => patch({ date: e.target.value })}
-                />
-              </Field>
-              <Field label={t('quotes.fields.validUntil')}>
-                <Input
-                  type="date"
-                  value={quote.validUntil ?? ''}
-                  onChange={(e) => patch({ validUntil: e.target.value })}
-                />
-              </Field>
-              <Field label={t('quotes.fields.status')}>
-                <Select
-                  value={quote.status}
-                  onValueChange={(v) => patch({ status: v as QuoteStatus })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {t(`quotes.status.${s}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field label={t('quotes.fields.taxRate')}>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  step="0.1"
-                  value={quote.taxRate}
-                  onChange={(e) => patch({ taxRate: Number(e.target.value) || 0 })}
-                />
-              </Field>
-            </div>
+            <Card className="border-border/70">
+              <CardContent className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Field label={t('quotes.fields.date')}>
+                  <Input
+                    type="date"
+                    value={quote.date}
+                    onChange={(e) => patch({ date: e.target.value })}
+                    className="h-9"
+                  />
+                </Field>
+                <Field label={t('quotes.fields.validUntil')}>
+                  <Input
+                    type="date"
+                    value={quote.validUntil ?? ''}
+                    onChange={(e) => patch({ validUntil: e.target.value })}
+                    className="h-9"
+                  />
+                </Field>
+                <Field label={t('quotes.fields.status')}>
+                  <Select
+                    value={quote.status}
+                    onValueChange={(v) => patch({ status: v as QuoteStatus })}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {t(`quotes.status.${s}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Field label={t('quotes.fields.taxRate')}>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    value={quote.taxRate}
+                    onChange={(e) => patch({ taxRate: Number(e.target.value) || 0 })}
+                    className="h-9"
+                  />
+                </Field>
+              </CardContent>
+            </Card>
 
             <QuoteItemsTable
               items={quote.items}
@@ -263,27 +268,51 @@ export function QuoteEditorPage() {
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   placeholder={t('quotes.terms.placeholder')}
                 />
-                <Field label={t('quotes.fields.discount')}>
-                  <Input
-                    defaultValue={String(quote.discount ?? 0)}
-                    onBlur={(e) => {
-                      const v = parseMoneyInput(e.target.value)
-                      if (v !== null) patch({ discount: v })
-                    }}
-                  />
-                </Field>
-                <Field label={t('quotes.fields.globalMargin')}>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={99}
-                    step="0.1"
-                    value={quote.globalMarginPercent ?? companySettings.defaultMargin}
-                    onChange={(e) =>
-                      patch({ globalMarginPercent: Number(e.target.value) || 0 })
-                    }
-                  />
-                </Field>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label={t('quotes.fields.discount')}>
+                    <div className="flex gap-2">
+                      <Select
+                        value={quote.discountType ?? 'amount'}
+                        onValueChange={(v) =>
+                          patch({ discountType: v as 'amount' | 'percent' })
+                        }
+                      >
+                        <SelectTrigger className="h-9 w-[8.5rem] shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="amount">
+                            {t('quotes.fields.discountAmount')}
+                          </SelectItem>
+                          <SelectItem value="percent">
+                            {t('quotes.fields.discountPercent')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={quote.discountType === 'percent' ? '0.1' : '0.01'}
+                        value={quote.discount ?? 0}
+                        onChange={(e) => patch({ discount: Number(e.target.value) || 0 })}
+                        className="h-9"
+                      />
+                    </div>
+                  </Field>
+                  <Field label={t('quotes.fields.globalMargin')}>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={99}
+                      step="0.1"
+                      value={quote.globalMarginPercent ?? companySettings.defaultMargin}
+                      onChange={(e) =>
+                        patch({ globalMarginPercent: Number(e.target.value) || 0 })
+                      }
+                      className="h-9"
+                    />
+                  </Field>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -323,8 +352,10 @@ function Field({
   className?: string
 }) {
   return (
-    <label className={className}>
-      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
+    <label className={cn('flex min-w-0 flex-col gap-1', className)}>
+      <span className="h-4 whitespace-nowrap text-xs font-medium leading-4 text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   )

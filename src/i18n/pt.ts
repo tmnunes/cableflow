@@ -321,7 +321,9 @@ export const pt: TranslationSchema = {
       validUntil: 'Validade',
       status: 'Estado',
       taxRate: 'IVA %',
-      discount: 'Desconto (€)',
+      discount: 'Desconto',
+      discountAmount: 'Valor (€)',
+      discountPercent: 'Percentagem (%)',
       globalMargin: 'Margem global %',
     },
     items: {
@@ -407,6 +409,10 @@ export const pt: TranslationSchema = {
       aggregatedHint:
         'Os comprimentos são somados por tipo de condutor e secção — não por descrição do circuito.',
       runCount: '{{count}} circuitos',
+      alreadyMapped: 'Já associado a partir do projeto',
+      extraMaterials: 'Outros materiais do projeto',
+      extraCount: '{{count}} itens extra serão adicionados automaticamente.',
+      readyHint: 'Os materiais já seleccionados no projeto serão usados como estão.',
     },
   },
   settings: {

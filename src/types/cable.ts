@@ -52,6 +52,21 @@ export interface ProjectMaterialItem {
   cableSourceKey?: string
 }
 
+export function cableMaterialSourceKey(sectionMm2: number, code: ConductorCode): string {
+  return `cable:${sectionMm2}:${code}`
+}
+
+export function parseCableMaterialSourceKey(
+  key: string,
+): { sectionMm2: number; conductorCode: ConductorCode } | null {
+  const match = /^cable:(\d+(?:\.\d+)?):(F|R|VJ|N|T)$/.exec(key)
+  if (!match) return null
+  return {
+    sectionMm2: Number(match[1]),
+    conductorCode: match[2] as ConductorCode,
+  }
+}
+
 export interface CableRun {
   id: string
   description: string

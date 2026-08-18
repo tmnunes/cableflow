@@ -83,4 +83,14 @@ describe('quote totals', () => {
     expect(totals.taxAmount).toBeCloseTo(13.8, 2)
     expect(totals.grandTotal).toBeCloseTo(73.8, 2)
   })
+
+  it('applies percentage discount before tax', () => {
+    const totals = calculateQuoteTotals({
+      ...baseQuote,
+      discount: 10,
+      discountType: 'percent',
+    })
+    expect(totals.discount).toBe(6.5)
+    expect(totals.subtotalAfterDiscount).toBe(58.5)
+  })
 })
