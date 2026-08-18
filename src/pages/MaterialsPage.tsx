@@ -313,14 +313,12 @@ function MaterialRow({
         <Input
           value={material.name}
           onChange={(e) => patch({ name: e.target.value })}
-          onBlur={() => onSave(material)}
         />
       </td>
       <td className="px-3 py-2">
         <Input
           value={material.code ?? ''}
           onChange={(e) => patch({ code: e.target.value })}
-          onBlur={() => onSave(material)}
           className="font-mono text-xs"
         />
       </td>
