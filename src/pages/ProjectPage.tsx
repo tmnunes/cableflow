@@ -33,7 +33,7 @@ function ProjectView({
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
-  const activeTab: Tab = requestedTab === 'materials' ? 'materials' : 'cables'
+  const activeTab: Tab = requestedTab === 'cables' ? 'cables' : 'materials'
 
   const {
     project,
@@ -71,11 +71,8 @@ function ProjectView({
 
   const setActiveTab = (tab: Tab) => {
     const next = new URLSearchParams(searchParams)
-    if (tab === 'cables') {
-      next.delete('tab')
-    } else {
-      next.set('tab', tab)
-    }
+    if (tab === 'materials') next.delete('tab')
+    else next.set('tab', tab)
     setSearchParams(next, { replace: true })
   }
 
@@ -129,21 +126,6 @@ function ProjectView({
       <div className="flex gap-1 border-b border-border/70 no-print">
         <button
           type="button"
-          onClick={() => setActiveTab('cables')}
-          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-            activeTab === 'cables'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Cable className="h-4 w-4" />
-          {t('projects.tabs.cables')}
-          <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">
-            {project.items.length}
-          </span>
-        </button>
-        <button
-          type="button"
           onClick={() => setActiveTab('materials')}
           className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === 'materials'
@@ -155,6 +137,21 @@ function ProjectView({
           {t('projects.tabs.materials')}
           <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">
             {projectMaterials.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('cables')}
+          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'cables'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <Cable className="h-4 w-4" />
+          {t('projects.tabs.cables')}
+          <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">
+            {project.items.length}
           </span>
         </button>
       </div>
