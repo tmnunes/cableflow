@@ -175,6 +175,7 @@ export const en = {
     subtitle: 'Materials, quantities and other items for this project.',
     add: 'Add item',
     empty: 'No materials added yet. Add items to track project materials.',
+    material: 'Material',
     description: 'Description',
     quantity: 'Qty',
     unit: 'Unit',
@@ -190,6 +191,7 @@ export const en = {
     fromCatalog: 'From catalog',
     catalogSearch: 'Search catalog for this line…',
     catalogEmpty: 'No materials found in catalog.',
+    priceFromSelectedMaterial: 'Price linked to selected supplier material.',
     units: {
       unit: 'Unit',
       meter: 'Metre',
