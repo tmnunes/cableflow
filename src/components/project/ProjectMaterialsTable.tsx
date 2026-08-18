@@ -62,6 +62,29 @@ export function ProjectMaterialsTable({
     })
 
   const supplierName = (id?: string) => suppliers.find((s) => s.id === id)?.name
+  const catalogLookup = useMemo(() => {
+    const byLabel = new Map<string, Material>()
+    const byId = new Map<string, Material>()
+    for (const material of catalogMaterials) {
+      const supplier = supplierName(material.supplierId)
+      const label = [material.name, supplier].filter(Boolean).join(' — ')
+      byLabel.set(label, material)
+      byId.set(material.id, material)
+    }
+    return { byLabel, byId }
+  }, [catalogMaterials, suppliers])
+
+  const applyCatalogSelection = (itemId: string, rawValue: string) => {
+    const selected = catalogLookup.byLabel.get(rawValue)
+    if (!selected) return
+    onUpdate(itemId, {
+      description: selected.name,
+      unit: selected.unit,
+      unitPrice: selected.purchasePrice,
+      catalogMaterialId: selected.id,
+      supplierId: selected.supplierId,
+    })
+  }
 
   return (
     <div className="space-y-3">
@@ -96,7 +119,7 @@ export function ProjectMaterialsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-muted/50 text-left text-xs font-medium text-muted-foreground">
-              <th className="px-3 py-2">{t('projectMaterials.description')}</th>
+              <th className="min-w-[340px] px-3 py-2">{t('projectMaterials.description')}</th>
               <th className="w-20 px-3 py-2">{t('projectMaterials.quantity')}</th>
               <th className="w-28 px-3 py-2">{t('projectMaterials.unit')}</th>
               <th className="w-28 px-3 py-2">{t('projectMaterials.unitPrice')}</th>
@@ -120,11 +143,35 @@ export function ProjectMaterialsTable({
                 return (
                   <tr key={item.id} className="border-b border-border/50 last:border-0">
                     <td className="px-2 py-1">
-                      <div>
-                        <Input
+                      <div className="space-y-1.5">
+                        {!isCableAuto ? (
+                          <>
+                            <Input
+                              list={`catalog-materials-${item.id}`}
+                              defaultValue={
+                                item.catalogMaterialId
+                                  ? [item.description, supplier].filter(Boolean).join(' — ')
+                                  : ''
+                              }
+                              onChange={(e) => applyCatalogSelection(item.id, e.target.value)}
+                              className="h-8 text-sm"
+                              placeholder={t('projectMaterials.catalogSearch')}
+                            />
+                            <datalist id={`catalog-materials-${item.id}`}>
+                              {catalogMaterials.map((material) => {
+                                const optionSupplier = supplierName(material.supplierId)
+                                const label = [material.name, optionSupplier]
+                                  .filter(Boolean)
+                                  .join(' — ')
+                                return <option key={material.id} value={label} />
+                              })}
+                            </datalist>
+                          </>
+                        ) : null}
+                        <textarea
                           value={item.description}
                           onChange={(e) => onUpdate(item.id, { description: e.target.value })}
-                          className="h-8 text-sm"
+                          className="min-h-[72px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                           placeholder={t('projectMaterials.description')}
                           readOnly={isCableAuto}
                         />

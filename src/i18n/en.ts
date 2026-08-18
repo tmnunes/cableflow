@@ -188,6 +188,7 @@ export const en = {
     totalCost: 'Total cost',
     cableAutoDescription: 'Cable {{section}} mm² — {{conductor}}',
     fromCatalog: 'From catalog',
+    catalogSearch: 'Search catalog for this line…',
     catalogEmpty: 'No materials found in catalog.',
     units: {
       unit: 'Unit',

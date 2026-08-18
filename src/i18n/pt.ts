@@ -186,6 +186,7 @@ export const pt: TranslationSchema = {
     totalCost: 'Custo total',
     cableAutoDescription: 'Cabo {{section}} mm² — {{conductor}}',
     fromCatalog: 'Do catálogo',
+    catalogSearch: 'Pesquisar catálogo para esta linha…',
     catalogEmpty: 'Nenhum material encontrado no catálogo.',
     units: {
       unit: 'Unidade',
