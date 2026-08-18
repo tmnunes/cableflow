@@ -85,6 +85,8 @@ npm run build
 npm run preview
 ```
 
+The app is a client-side SPA (React Router). On Vercel, `vercel.json` rewrites unknown paths to `index.html` so a refresh on `/projects`, `/quotes/:id`, and similar routes does not 404.
+
 ### Tests
 
 ```bash
