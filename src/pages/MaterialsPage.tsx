@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState, useEffect } from 'react'
-import { Copy, Download, Plus, Search, Trash2, Upload } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { Copy, Plus, Search, Trash2 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -22,12 +22,7 @@ import {
 import { createEmptyMaterial, useAppData } from '@/hooks/useAppData'
 import type { Material, MaterialCategory, SortDirection } from '@/types'
 import { MATERIAL_CATEGORIES, MATERIAL_UNITS } from '@/types'
-import {
-  parseMaterialsImport,
-  toMaterialsExport,
-} from '@/services/importExport'
-import { mergeMaterialsImport } from '@/services/storage/migration'
-import { createId, downloadJson } from '@/utils/cn'
+import { createId } from '@/utils/cn'
 import { formatCurrency, parseMoneyInput } from '@/utils/money'
 import { cn } from '@/utils/cn'
 
@@ -35,7 +30,7 @@ type MaterialSortField = 'name' | 'category' | 'purchasePrice' | 'salePrice'
 
 export function MaterialsPage() {
   const { t } = useTranslation()
-  const { materials, suppliers, upsertMaterial, deleteMaterial, setMaterials, locale } =
+  const { materials, suppliers, upsertMaterial, deleteMaterial, locale } =
     useAppData()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'all'>('all')
@@ -43,7 +38,6 @@ export function MaterialsPage() {
   const [sortField, setSortField] = useState<MaterialSortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [showInactive, setShowInactive] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
@@ -116,24 +110,6 @@ export function MaterialsPage() {
     toast.success(t('materials.deactivated'))
   }
 
-  const handleExport = () => {
-    downloadJson('cableflow-materials.json', toMaterialsExport(materials))
-    toast.success(t('materials.exported'))
-  }
-
-  const handleImport = async (file: File | null) => {
-    if (!file) return
-    const text = await file.text()
-    const result = parseMaterialsImport(text)
-    if (!result.ok) {
-      toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
-      return
-    }
-    const merged = mergeMaterialsImport(materials, result.data)
-    setMaterials(merged)
-    toast.success(t('materials.imported'))
-  }
-
   const supplierName = (id?: string) =>
     suppliers.find((s) => s.id === id)?.name ?? '—'
 
@@ -145,31 +121,12 @@ export function MaterialsPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t('materials.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <Upload />
-            {t('header.import')}
-          </Button>
-          <Button variant="outline" onClick={handleExport}>
-            <Download />
-            {t('header.export')}
-          </Button>
           <Button onClick={handleAdd}>
             <Plus />
             {t('materials.add')}
           </Button>
         </div>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(e) => {
-          void handleImport(e.target.files?.[0] ?? null)
-          e.target.value = ''
-        }}
-      />
 
       <Card className="border-border/70">
         <CardHeader className="flex flex-col gap-3 space-y-0">

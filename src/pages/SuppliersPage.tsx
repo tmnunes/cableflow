@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState } from 'react'
-import { Copy, Download, Plus, Search, Trash2, Upload } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Copy, Plus, Search, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -14,21 +14,18 @@ import {
 } from '@/components/ui/tooltip'
 import { createEmptySupplier, useAppData } from '@/hooks/useAppData'
 import type { SortDirection, Supplier } from '@/types'
-import { parseSuppliersImport, toSuppliersExport } from '@/services/importExport'
-import { mergeSuppliersImport } from '@/services/storage/migration'
-import { createId, downloadJson } from '@/utils/cn'
+import { createId } from '@/utils/cn'
 import { cn } from '@/utils/cn'
 
 type SupplierSortField = 'name' | 'email' | 'phone'
 
 export function SuppliersPage() {
   const { t } = useTranslation()
-  const { suppliers, materials, upsertSupplier, deleteSupplier, setSuppliers } = useAppData()
+  const { suppliers, materials, upsertSupplier, deleteSupplier } = useAppData()
   const [search, setSearch] = useState('')
   const [sortField, setSortField] = useState<SupplierSortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [showInactive, setShowInactive] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const materialCount = (supplierId: string) =>
     materials.filter((m) => m.supplierId === supplierId).length
@@ -72,23 +69,6 @@ export function SuppliersPage() {
     upsertSupplier({ ...supplier, updatedAt: new Date().toISOString() })
   }
 
-  const handleExport = () => {
-    downloadJson('cableflow-suppliers.json', toSuppliersExport(suppliers))
-    toast.success(t('suppliers.exported'))
-  }
-
-  const handleImport = async (file: File | null) => {
-    if (!file) return
-    const text = await file.text()
-    const result = parseSuppliersImport(text)
-    if (!result.ok) {
-      toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
-      return
-    }
-    setSuppliers(mergeSuppliersImport(suppliers, result.data))
-    toast.success(t('suppliers.imported'))
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -97,31 +77,12 @@ export function SuppliersPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t('suppliers.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <Upload />
-            {t('header.import')}
-          </Button>
-          <Button variant="outline" onClick={handleExport}>
-            <Download />
-            {t('header.export')}
-          </Button>
           <Button onClick={() => upsertSupplier(createEmptySupplier())}>
             <Plus />
             {t('suppliers.add')}
           </Button>
         </div>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(e) => {
-          void handleImport(e.target.files?.[0] ?? null)
-          e.target.value = ''
-        }}
-      />
 
       <Card className="border-border/70">
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">

@@ -41,3 +41,19 @@ export interface QuoteExport {
   version: typeof DATA_VERSION
   quote: Quote
 }
+
+export interface QuotesExport {
+  version: typeof DATA_VERSION
+  quotes: Quote[]
+}
+
+export interface ProjectsExport {
+  version: typeof DATA_VERSION
+  projects: ProjectRecord[]
+}
+
+export interface SettingsExport {
+  version: typeof DATA_VERSION
+  companySettings: CompanySettings
+  quoteNumberState?: QuoteNumberState
+}

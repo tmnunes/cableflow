@@ -122,6 +122,8 @@ export const en = {
     itemSpecParse: 'Item {{index}}: specification could not be parsed.',
     missingMaterials: 'Missing materials array.',
     missingSuppliers: 'Missing suppliers array.',
+    missingQuotes: 'Missing quotes.',
+    missingSettings: 'Missing company settings.',
   },
   shortcuts: {
     hint: 'Ctrl+S export · Ctrl+O import · Ctrl+P print',
@@ -169,6 +171,17 @@ export const en = {
     open: 'Open',
     deleteConfirm: 'Delete this project? This cannot be undone.',
     deleted: 'Project deleted.',
+    dataTitle: 'Export & import',
+    dataDescription:
+      'Export or import projects and quotes as JSON files. Materials, suppliers and company settings are in Settings.',
+    projectsData: 'Projects',
+    projectsDataHint: 'Cable runs and project materials.',
+    quotesData: 'Quotes',
+    quotesDataHint: 'Quotes linked to your projects.',
+    projectsExported: 'Projects exported.',
+    projectsImported: 'Projects imported.',
+    quotesExported: 'Quotes exported.',
+    quotesImported: 'Quotes imported.',
   },
   projectMaterials: {
     title: 'Project materials',
@@ -419,16 +432,19 @@ export const en = {
   },
   settings: {
     title: 'Settings',
-    subtitle: 'Company profile and data backup.',
-    backupTitle: 'Backup & restore',
-    backupDescription:
-      'Your projects and catalogs stay only in this browser — no other user or device can see them. Export a JSON backup to save or move your data; import it on another browser or device to restore.',
-    exportBackup: 'Export full backup',
-    importBackup: 'Import backup',
-    backupExported: 'Full backup exported.',
-    backupImported: 'Backup imported successfully.',
-    backupImportConfirm:
-      'Import backup? Existing data will be merged with the file contents.',
+    subtitle: 'Company profile and catalog data.',
+    dataTitle: 'Export & import',
+    dataDescription:
+      'Export or import company settings, materials and suppliers. Project and quote files are on the Projects page.',
+    companyData: 'Company settings',
+    companyDataHint: 'Company profile, VAT, default margin and quote prefix.',
+    materialsData: 'Materials catalog',
+    materialsDataHint: 'All catalog materials and prices.',
+    suppliersData: 'Suppliers',
+    suppliersDataHint: 'Supplier records.',
+    settingsExported: 'Company settings exported.',
+    settingsImported: 'Company settings imported.',
+    settingsImportConfirm: 'Replace company settings with the file contents?',
     companyTitle: 'Company profile',
     companyComingSoon: 'Company settings for quotes will be available in a later phase.',
     company: {

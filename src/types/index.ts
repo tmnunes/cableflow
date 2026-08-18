@@ -65,5 +65,9 @@ export type {
   AppDataExport,
   MaterialsExport,
   SuppliersExport,
+  QuoteExport,
+  QuotesExport,
+  ProjectsExport,
+  SettingsExport,
 } from '@/types/app'
 export { DATA_VERSION } from '@/types/app'

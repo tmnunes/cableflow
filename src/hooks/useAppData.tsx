@@ -20,7 +20,7 @@ import {
   saveLocale,
   saveTheme,
 } from '@/services/storage/preferencesStorage'
-import type { CompanySettings } from '@/types/company'
+import type { CompanySettings, QuoteNumberState } from '@/types/company'
 import type { Quote } from '@/types/quote'
 import { allocateQuoteNumber } from '@/services/quotes/quoteNumber'
 import { createProjectRecord } from '@/services/storage/defaultAppData'
@@ -47,7 +47,8 @@ interface AppDataContextValue {
   updateProject: (id: string, patch: Partial<Pick<ProjectRecord, 'projectName' | 'items' | 'materials'>>) => void
   deleteProject: (id: string) => void
   duplicateProject: (id: string) => ProjectRecord | undefined
-  importProject: (project: Omit<ProjectRecord, 'id' | 'createdAt' | 'updatedAt'>) => ProjectRecord
+  importProject: (project: Omit<ProjectRecord, 'id' | 'createdAt' | 'updatedAt'> | ProjectRecord) => ProjectRecord
+  importProjectRecords: (records: ProjectRecord[]) => void
 
   // Materials
   materials: Material[]
@@ -66,10 +67,12 @@ interface AppDataContextValue {
   upsertQuote: (quote: Quote) => void
   deleteQuote: (id: string) => void
   createQuote: (projectId?: string) => Quote
+  importQuotes: (quotes: Quote[]) => void
 
   // Company
   companySettings: CompanySettings
   updateCompanySettings: (patch: Partial<CompanySettings>) => void
+  importCompanySettings: (settings: CompanySettings, quoteNumberState?: QuoteNumberState) => void
 }
 
 const AppDataContext = createContext<AppDataContextValue | null>(null)
@@ -173,7 +176,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const importProject = useCallback(
-    (project: Omit<ProjectRecord, 'id' | 'createdAt' | 'updatedAt'>): ProjectRecord => {
+    (project: Omit<ProjectRecord, 'id' | 'createdAt' | 'updatedAt'> | ProjectRecord): ProjectRecord => {
       const record = createProjectRecord(project)
       setData((prev) => ({
         ...prev,
@@ -184,6 +187,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     },
     [],
   )
+
+  const importProjectRecords = useCallback((records: ProjectRecord[]) => {
+    setData((prev) => {
+      const map = new Map(prev.projects.map((p) => [p.id, p]))
+      for (const record of records) {
+        map.set(record.id, record)
+      }
+      return { ...prev, projects: [...map.values()] }
+    })
+  }, [])
 
   const upsertMaterial = useCallback((material: Material) => {
     setData((prev) => {
@@ -256,6 +269,17 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     return quote
   }, [data.quoteNumberState, data.companySettings])
 
+  const importQuotes = useCallback((quotes: Quote[]) => {
+    setData((prev) => {
+      const map = new Map(prev.quotes.map((q) => [q.id, q]))
+      for (const quote of quotes) {
+        const normalized = normalizeQuote(quote)
+        map.set(normalized.id, normalized)
+      }
+      return { ...prev, quotes: [...map.values()] }
+    })
+  }, [])
+
   const updateCompanySettings = useCallback((patch: Partial<CompanySettings>) => {
     setData((prev) => ({
       ...prev,
@@ -265,6 +289,21 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         : prev.quoteNumberState,
     }))
   }, [])
+
+  const importCompanySettings = useCallback(
+    (settings: CompanySettings, quoteNumberState?: QuoteNumberState) => {
+      setData((prev) => ({
+        ...prev,
+        companySettings: { ...prev.companySettings, ...settings },
+        quoteNumberState: quoteNumberState
+          ? quoteNumberState
+          : settings.quotePrefix
+            ? { ...prev.quoteNumberState, prefix: settings.quotePrefix }
+            : prev.quoteNumberState,
+      }))
+    },
+    [],
+  )
 
   const value = useMemo<AppDataContextValue>(
     () => ({
@@ -282,6 +321,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteProject,
       duplicateProject,
       importProject,
+      importProjectRecords,
       materials: data.materials,
       upsertMaterial,
       deleteMaterial,
@@ -294,8 +334,10 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       upsertQuote,
       deleteQuote,
       createQuote,
+      importQuotes,
       companySettings: data.companySettings,
       updateCompanySettings,
+      importCompanySettings,
     }),
     [
       data,
@@ -312,6 +354,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteProject,
       duplicateProject,
       importProject,
+      importProjectRecords,
       upsertMaterial,
       deleteMaterial,
       setMaterials,
@@ -321,7 +364,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       upsertQuote,
       deleteQuote,
       createQuote,
+      importQuotes,
       updateCompanySettings,
+      importCompanySettings,
     ],
   )
 

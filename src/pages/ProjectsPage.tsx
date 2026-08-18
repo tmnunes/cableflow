@@ -1,23 +1,38 @@
-import { useRef, useState } from 'react'
-import { Copy, Download, Plus, Search, Trash2, Upload } from 'lucide-react'
+import { useState } from 'react'
+import { Copy, Download, Plus, Search, Trash2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { DataTransferRow } from '@/components/common/DataTransferRow'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAppData } from '@/hooks/useAppData'
 import { createProjectRecord } from '@/services/storage/defaultAppData'
-import { parseImportJson, toExportPayload } from '@/services/importExport'
+import {
+  parseProjectsImport,
+  parseQuotesImport,
+  toExportPayload,
+  toProjectsExport,
+  toQuotesExport,
+} from '@/services/importExport'
 import { downloadJson, slugifyFilename } from '@/utils/cn'
 
 export function ProjectsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { projects, createProject, deleteProject, duplicateProject, importProject, setActiveProjectId } =
-    useAppData()
+  const {
+    projects,
+    quotes,
+    createProject,
+    deleteProject,
+    duplicateProject,
+    importProject,
+    importProjectRecords,
+    importQuotes,
+    setActiveProjectId,
+  } = useAppData()
   const [search, setSearch] = useState('')
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const filtered = projects.filter((p) =>
     p.projectName.toLowerCase().includes(search.trim().toLowerCase()),
@@ -43,17 +58,44 @@ export function ProjectsPage() {
     toast.success(t('toast.exported'))
   }
 
-  const handleImport = async (file: File | null) => {
+  const handleProjectsExport = () => {
+    downloadJson('cableflow-projects.json', toProjectsExport(projects))
+    toast.success(t('projects.projectsExported'))
+  }
+
+  const handleProjectsImport = async (file: File | null) => {
     if (!file) return
     const text = await file.text()
-    const result = parseImportJson(text)
+    const result = parseProjectsImport(text)
     if (!result.ok) {
       toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
       return
     }
-    const record = importProject(createProjectRecord(result.project))
-    toast.success(t('toast.imported'))
-    navigate(`/projects/${record.id}/cables`)
+    if (result.kind === 'single') {
+      const record = importProject(createProjectRecord(result.project))
+      toast.success(t('toast.imported'))
+      navigate(`/projects/${record.id}/cables`)
+      return
+    }
+    importProjectRecords(result.projects)
+    toast.success(t('projects.projectsImported'))
+  }
+
+  const handleQuotesExport = () => {
+    downloadJson('cableflow-quotes.json', toQuotesExport(quotes))
+    toast.success(t('projects.quotesExported'))
+  }
+
+  const handleQuotesImport = async (file: File | null) => {
+    if (!file) return
+    const text = await file.text()
+    const result = parseQuotesImport(text)
+    if (!result.ok) {
+      toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
+      return
+    }
+    importQuotes(result.data)
+    toast.success(t('projects.quotesImported'))
   }
 
   return (
@@ -63,28 +105,34 @@ export function ProjectsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t('projects.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t('projects.subtitle')}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
-            <Upload />
-            {t('header.import')}
-          </Button>
-          <Button onClick={handleNew}>
-            <Plus />
-            {t('projects.new')}
-          </Button>
-        </div>
+        <Button onClick={handleNew}>
+          <Plus />
+          {t('projects.new')}
+        </Button>
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(e) => {
-          void handleImport(e.target.files?.[0] ?? null)
-          e.target.value = ''
-        }}
-      />
+      <Card className="border-border/70">
+        <CardHeader>
+          <CardTitle className="text-base">{t('projects.dataTitle')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-1">
+          <p className="text-sm text-muted-foreground">{t('projects.dataDescription')}</p>
+          <div className="divide-y divide-border">
+            <DataTransferRow
+              title={t('projects.projectsData')}
+              description={t('projects.projectsDataHint')}
+              onExport={handleProjectsExport}
+              onImport={handleProjectsImport}
+            />
+            <DataTransferRow
+              title={t('projects.quotesData')}
+              description={t('projects.quotesDataHint')}
+              onExport={handleQuotesExport}
+              onImport={handleQuotesImport}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-border/70">
         <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">

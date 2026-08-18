@@ -1,6 +1,7 @@
 import type { AppData } from '@/types/app'
 import { DATA_VERSION } from '@/types/app'
 import type { Material } from '@/types/material'
+import type { Quote } from '@/types/quote'
 import type { Supplier } from '@/types/supplier'
 import { validateAndNormalize } from '@/services/importExport'
 import {
@@ -100,6 +101,14 @@ export function mergeSuppliersImport(
   return [...map.values()]
 }
 
+export function mergeQuotesImport(current: Quote[], incoming: Quote[]): Quote[] {
+  const map = new Map(current.map((q) => [q.id, q]))
+  for (const item of incoming) {
+    map.set(item.id, item)
+  }
+  return [...map.values()]
+}
+
 export function mergeAppDataImport(current: AppData, incoming: AppData): AppData {
   const projectMap = new Map(current.projects.map((p) => [p.id, p]))
   for (const p of incoming.projects) {
@@ -111,9 +120,7 @@ export function mergeAppDataImport(current: AppData, incoming: AppData): AppData
     projects: [...projectMap.values()],
     materials: mergeMaterialsImport(current.materials, incoming.materials),
     suppliers: mergeSuppliersImport(current.suppliers, incoming.suppliers),
-    quotes: [...current.quotes, ...incoming.quotes.filter(
-      (q) => !current.quotes.some((c) => c.id === q.id),
-    )],
+    quotes: mergeQuotesImport(current.quotes, incoming.quotes),
     companySettings: incoming.companySettings.name
       ? incoming.companySettings
       : current.companySettings,
