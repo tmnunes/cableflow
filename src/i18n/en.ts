@@ -186,6 +186,9 @@ export const en = {
     duplicate: 'Duplicate',
     search: 'Search materials…',
     totalCost: 'Total cost',
+    cableAutoDescription: 'Cable {{section}} mm² — {{conductor}}',
+    fromCatalog: 'From catalog',
+    catalogEmpty: 'No materials found in catalog.',
     units: {
       unit: 'Unit',
       meter: 'Metre',

@@ -44,6 +44,12 @@ export interface ProjectMaterialItem {
   unit: string
   unitPrice: number
   notes: string
+  /** When added from the global catalog */
+  catalogMaterialId?: string
+  /** Supplier linked via catalog or manually chosen */
+  supplierId?: string
+  /** Auto-generated from cable calculations — key like "cable:1.5:F" */
+  cableSourceKey?: string
 }
 
 export interface CableRun {
