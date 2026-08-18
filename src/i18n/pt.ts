@@ -173,6 +173,7 @@ export const pt: TranslationSchema = {
     subtitle: 'Materiais, quantidades e outros itens deste projeto.',
     add: 'Adicionar item',
     empty: 'Ainda sem materiais. Adicione itens para acompanhar os materiais do projeto.',
+    material: 'Material',
     description: 'Descrição',
     quantity: 'Qtd',
     unit: 'Unidade',
@@ -188,6 +189,7 @@ export const pt: TranslationSchema = {
     fromCatalog: 'Do catálogo',
     catalogSearch: 'Pesquisar catálogo para esta linha…',
     catalogEmpty: 'Nenhum material encontrado no catálogo.',
+    priceFromSelectedMaterial: 'Preço ligado ao material selecionado do fornecedor.',
     units: {
       unit: 'Unidade',
       meter: 'Metro',
