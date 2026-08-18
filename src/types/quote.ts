@@ -60,6 +60,7 @@ export interface Quote {
   globalMarginPercent?: number
   taxRate: number
   discount?: number
+  discountType?: 'amount' | 'percent'
   notes?: string
   terms?: string
   createdAt: string

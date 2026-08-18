@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Download, FileText, Plus, Trash2 } from 'lucide-react'
+import { FileText, Plus, Trash2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAppData } from '@/hooks/useAppData'
-import { downloadJson } from '@/utils/cn'
 import { formatCurrency } from '@/utils/money'
 
 export function QuotesPage() {
@@ -36,13 +35,6 @@ export function QuotesPage() {
   const handleNew = () => {
     const quote = createQuote()
     navigate(`/quotes/${quote.id}`)
-  }
-
-  const handleExport = (id: string) => {
-    const quote = quotes.find((q) => q.id === id)
-    if (!quote) return
-    downloadJson(`quote-${quote.number}.json`, { version: 2, quote })
-    toast.success(t('quotes.exported'))
   }
 
   return (
@@ -104,9 +96,6 @@ export function QuotesPage() {
                         <FileText className="h-3.5 w-3.5" />
                         {t('quotes.open')}
                       </Link>
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleExport(quote.id)}>
-                      <Download className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       size="sm"

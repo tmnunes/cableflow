@@ -23,6 +23,11 @@ export type {
   ValidationErrors,
 } from '@/types/cable'
 
+export {
+  cableMaterialSourceKey,
+  parseCableMaterialSourceKey,
+} from '@/types/cable'
+
 export type {
   MaterialCategory,
   MaterialUnit,
@@ -60,5 +65,9 @@ export type {
   AppDataExport,
   MaterialsExport,
   SuppliersExport,
+  QuoteExport,
+  QuotesExport,
+  ProjectsExport,
+  SettingsExport,
 } from '@/types/app'
 export { DATA_VERSION } from '@/types/app'

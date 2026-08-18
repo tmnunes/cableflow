@@ -7,6 +7,7 @@ import {
   calculateProfit,
   calculateTax,
   calculateTotalWithTax,
+  resolveDiscountAmount,
 } from '@/utils/pricing'
 import { roundMoney } from '@/utils/money'
 
@@ -59,7 +60,11 @@ export function calculateQuoteTotals(quote: Quote): QuoteTotals {
 
   const totalCost = roundMoney(materialsPurchase + laborCost)
   const totalSale = roundMoney(materialsSale + laborSale)
-  const discount = quote.discount ?? 0
+  const discount = resolveDiscountAmount(
+    totalSale,
+    quote.discount ?? 0,
+    quote.discountType ?? 'amount',
+  )
   const subtotalAfterDiscount = applyDiscount(totalSale, discount)
   const taxRate = quote.taxRate ?? 0
   const taxAmount = calculateTax(subtotalAfterDiscount, taxRate)

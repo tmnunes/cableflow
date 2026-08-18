@@ -52,6 +52,21 @@ export function applyDiscount(subtotal: number, discount = 0): number {
   return roundMoney(Math.max(0, subtotal - discount))
 }
 
+export type DiscountType = 'amount' | 'percent'
+
+/** Convert stored discount value into a euro amount. */
+export function resolveDiscountAmount(
+  subtotal: number,
+  discount = 0,
+  type: DiscountType = 'amount',
+): number {
+  if (discount <= 0 || subtotal <= 0) return 0
+  if (type === 'percent') {
+    return roundMoney(subtotal * (Math.min(discount, 100) / 100))
+  }
+  return roundMoney(Math.min(subtotal, discount))
+}
+
 /** Tax amount from taxable base and rate % */
 export function calculateTax(taxableBase: number, taxRate: number): number {
   return roundMoney(taxableBase * (taxRate / 100))

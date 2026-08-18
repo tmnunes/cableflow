@@ -6,4 +6,4 @@ export function saveAppData(data: AppData): void {
   writeJson(APP_DATA_KEY, data)
 }
 
-export { loadAppData, mergeAppDataImport, mergeMaterialsImport, mergeSuppliersImport } from '@/services/storage/migration'
+export { loadAppData, mergeAppDataImport, mergeMaterialsImport, mergeSuppliersImport, mergeQuotesImport } from '@/services/storage/migration'
