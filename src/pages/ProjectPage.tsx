@@ -61,7 +61,6 @@ function ProjectView({
     projectNameInputRef,
     projectMaterials,
     addMaterial,
-    addMaterialFromCatalog,
     updateMaterial,
     deleteMaterial,
     duplicateMaterial,
@@ -182,7 +181,6 @@ function ProjectView({
         <ProjectMaterialsTable
           items={projectMaterials}
           onAdd={addMaterial}
-          onAddFromCatalog={(material, _supplier, qty) => addMaterialFromCatalog(material, qty)}
           onUpdate={updateMaterial}
           onDelete={deleteMaterial}
           onDuplicate={duplicateMaterial}
