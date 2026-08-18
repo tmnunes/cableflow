@@ -15,6 +15,7 @@ import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
 import { createId, downloadJson, slugifyFilename } from '@/utils/cn'
 import { parseImportJson, toExportPayload } from '@/services/importExport'
+import { catalogPriceForLine } from '@/utils/pricing/catalogLine'
 
 const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
   F: 'Phase (F)',
@@ -250,15 +251,19 @@ export function useProject(projectId: string) {
 
   const addMaterialFromCatalog = useCallback(
     (
-      catalogMaterial: Pick<Material, 'id' | 'name' | 'unit' | 'purchasePrice' | 'supplierId'>,
+      catalogMaterial: Pick<
+        Material,
+        'id' | 'name' | 'unit' | 'purchasePrice' | 'supplierId' | 'metersPerRoll'
+      >,
       quantity: number,
     ) => {
+      const unit = catalogMaterial.unit === 'roll' && catalogMaterial.metersPerRoll ? 'meter' : catalogMaterial.unit
       const item: ProjectMaterialItem = {
         id: createId(),
         description: catalogMaterial.name,
         quantity,
-        unit: catalogMaterial.unit,
-        unitPrice: catalogMaterial.purchasePrice,
+        unit,
+        unitPrice: catalogPriceForLine(catalogMaterial, unit),
         notes: '',
         catalogMaterialId: catalogMaterial.id,
         supplierId: catalogMaterial.supplierId,

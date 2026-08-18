@@ -42,7 +42,7 @@ export function MaterialCombobox({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return materials
-      .filter((m) => m.active)
+      .filter((m) => m.active && m.name.trim())
       .filter((m) => {
         if (!q) return true
         const supplier = m.supplierId ? supplierMap.get(m.supplierId)?.name : ''
@@ -155,6 +155,11 @@ export function MaterialCombobox({
                     </span>
                     <span className="shrink-0 text-right text-xs tabular-nums text-muted-foreground">
                       {formatCurrency(material.purchasePrice, locale)}
+                      {material.unit === 'roll' && material.metersPerRoll ? (
+                        <span className="block">
+                          {material.metersPerRoll} m
+                        </span>
+                      ) : null}
                     </span>
                   </button>
                 )

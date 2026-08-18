@@ -92,16 +92,11 @@ export function MaterialsPage() {
   }
 
   const saveMaterial = (material: Material) => {
-    if (!material.name.trim()) {
-      toast.error(t('materials.nameRequired'))
-      return
-    }
     upsertMaterial({ ...material, updatedAt: new Date().toISOString() })
   }
 
   const handleAdd = () => {
-    const material = createEmptyMaterial({ name: t('materials.newMaterial') })
-    upsertMaterial(material)
+    upsertMaterial(createEmptyMaterial())
   }
 
   const handleDuplicate = (source: Material) => {
@@ -342,7 +337,13 @@ function MaterialRow({
       <td className="px-3 py-2">
         <Select
           value={material.unit}
-          onValueChange={(v) => patch({ unit: v as Material['unit'] })}
+          onValueChange={(v) => {
+            const unit = v as Material['unit']
+            patch({
+              unit,
+              metersPerRoll: unit === 'roll' ? material.metersPerRoll : undefined,
+            })
+          }}
         >
           <SelectTrigger>
             <SelectValue />
@@ -355,6 +356,21 @@ function MaterialRow({
             ))}
           </SelectContent>
         </Select>
+        {material.unit === 'roll' ? (
+          <Input
+            type="number"
+            min={0}
+            step="any"
+            value={material.metersPerRoll ?? ''}
+            onChange={(e) =>
+              patch({
+                metersPerRoll: e.target.value === '' ? undefined : Math.max(0, Number(e.target.value) || 0),
+              })
+            }
+            placeholder={t('materials.metersPerRoll')}
+            className="mt-1 font-mono"
+          />
+        ) : null}
       </td>
       <td className="px-3 py-2">
         <Input
