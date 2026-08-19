@@ -63,11 +63,11 @@ export type {
 export type {
   AppData,
   AppDataExport,
-  MaterialsExport,
-  SuppliersExport,
-  QuoteExport,
-  QuotesExport,
-  ProjectsExport,
-  SettingsExport,
+  ProjectsQuotesTransfer,
+  SettingsMaterialsSuppliersTransfer,
 } from '@/types/app'
-export { DATA_VERSION } from '@/types/app'
+export {
+  DATA_VERSION,
+  PROJECTS_QUOTES_SCHEMA,
+  SETTINGS_MATERIALS_SUPPLIERS_SCHEMA,
+} from '@/types/app'

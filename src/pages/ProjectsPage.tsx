@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Download, Plus, Search, Trash2 } from 'lucide-react'
+import { Copy, Plus, Search, Trash2 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -8,15 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { useAppData } from '@/hooks/useAppData'
-import { createProjectRecord } from '@/services/storage/defaultAppData'
 import {
-  parseProjectsImport,
-  parseQuotesImport,
-  toExportPayload,
-  toProjectsExport,
-  toQuotesExport,
+  parseProjectsQuotesImport,
+  toProjectsQuotesTransfer,
 } from '@/services/importExport'
-import { downloadJson, slugifyFilename } from '@/utils/cn'
+import { downloadJson } from '@/utils/cn'
 
 export function ProjectsPage() {
   const { t } = useTranslation()
@@ -27,7 +23,6 @@ export function ProjectsPage() {
     createProject,
     deleteProject,
     duplicateProject,
-    importProject,
     importProjectRecords,
     importQuotes,
     setActiveProjectId,
@@ -48,54 +43,27 @@ export function ProjectsPage() {
     navigate(`/projects/${id}/cables`)
   }
 
-  const handleExport = (id: string) => {
-    const project = projects.find((p) => p.id === id)
-    if (!project?.projectName.trim()) {
-      toast.error(t('toast.projectNameRequired'))
-      return
-    }
-    downloadJson(`${slugifyFilename(project.projectName)}.json`, toExportPayload(project))
-    toast.success(t('toast.exported'))
+  const handleProjectsQuotesExport = () => {
+    downloadJson('cableflow-projects-quotes.json', toProjectsQuotesTransfer(projects, quotes))
+    toast.success(t('projects.projectsQuotesExported'))
   }
 
-  const handleProjectsExport = () => {
-    downloadJson('cableflow-projects.json', toProjectsExport(projects))
-    toast.success(t('projects.projectsExported'))
-  }
-
-  const handleProjectsImport = async (file: File | null) => {
+  const handleProjectsQuotesImport = async (file: File | null) => {
     if (!file) return
     const text = await file.text()
-    const result = parseProjectsImport(text)
+    const result = parseProjectsQuotesImport(text)
     if (!result.ok) {
       toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
       return
     }
-    if (result.kind === 'single') {
-      const record = importProject(createProjectRecord(result.project))
-      toast.success(t('toast.imported'))
-      navigate(`/projects/${record.id}/cables`)
-      return
+    importProjectRecords(result.data.projects)
+    importQuotes(result.data.quotes)
+    const firstProject = result.data.projects[0]
+    if (firstProject) {
+      setActiveProjectId(firstProject.id)
+      navigate(`/projects/${firstProject.id}/cables`)
     }
-    importProjectRecords(result.projects)
-    toast.success(t('projects.projectsImported'))
-  }
-
-  const handleQuotesExport = () => {
-    downloadJson('cableflow-quotes.json', toQuotesExport(quotes))
-    toast.success(t('projects.quotesExported'))
-  }
-
-  const handleQuotesImport = async (file: File | null) => {
-    if (!file) return
-    const text = await file.text()
-    const result = parseQuotesImport(text)
-    if (!result.ok) {
-      toast.error(t('toast.importFailed', { reason: t(`importErrors.${result.error}`) }))
-      return
-    }
-    importQuotes(result.data)
-    toast.success(t('projects.quotesImported'))
+    toast.success(t('projects.projectsQuotesImported'))
   }
 
   return (
@@ -119,16 +87,10 @@ export function ProjectsPage() {
           <p className="text-sm text-muted-foreground">{t('projects.dataDescription')}</p>
           <div className="divide-y divide-border">
             <DataTransferRow
-              title={t('projects.projectsData')}
-              description={t('projects.projectsDataHint')}
-              onExport={handleProjectsExport}
-              onImport={handleProjectsImport}
-            />
-            <DataTransferRow
-              title={t('projects.quotesData')}
-              description={t('projects.quotesDataHint')}
-              onExport={handleQuotesExport}
-              onImport={handleQuotesImport}
+              title={t('projects.projectsQuotesData')}
+              description={t('projects.projectsQuotesDataHint')}
+              onExport={handleProjectsQuotesExport}
+              onImport={handleProjectsQuotesImport}
             />
           </div>
         </CardContent>
@@ -174,9 +136,6 @@ export function ProjectsPage() {
                 <div className="flex flex-wrap gap-1">
                   <Button size="sm" variant="outline" onClick={() => handleOpen(project.id)}>
                     {t('projects.open')}
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleExport(project.id)}>
-                    <Download className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     size="sm"
