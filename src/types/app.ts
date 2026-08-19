@@ -27,33 +27,23 @@ export interface AppDataExport {
   quoteNumberState: QuoteNumberState
 }
 
-export interface MaterialsExport {
-  version: typeof DATA_VERSION
-  materials: Material[]
-}
+export const PROJECTS_QUOTES_SCHEMA = 'cableflow/projects-quotes' as const
 
-export interface SuppliersExport {
+export interface ProjectsQuotesTransfer {
+  schema: typeof PROJECTS_QUOTES_SCHEMA
   version: typeof DATA_VERSION
-  suppliers: Supplier[]
-}
-
-export interface QuoteExport {
-  version: typeof DATA_VERSION
-  quote: Quote
-}
-
-export interface QuotesExport {
-  version: typeof DATA_VERSION
+  projects: ProjectRecord[]
   quotes: Quote[]
 }
 
-export interface ProjectsExport {
-  version: typeof DATA_VERSION
-  projects: ProjectRecord[]
-}
+export const SETTINGS_MATERIALS_SUPPLIERS_SCHEMA =
+  'cableflow/settings-materials-suppliers' as const
 
-export interface SettingsExport {
+export interface SettingsMaterialsSuppliersTransfer {
+  schema: typeof SETTINGS_MATERIALS_SUPPLIERS_SCHEMA
   version: typeof DATA_VERSION
   companySettings: CompanySettings
-  quoteNumberState?: QuoteNumberState
+  quoteNumberState: QuoteNumberState
+  materials: Material[]
+  suppliers: Supplier[]
 }

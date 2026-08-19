@@ -1,15 +1,14 @@
 import type {
-  AppData,
-  AppDataExport,
-  MaterialsExport,
-  ProjectsExport,
-  QuotesExport,
-  SettingsExport,
-  SuppliersExport,
+  ProjectsQuotesTransfer,
+  SettingsMaterialsSuppliersTransfer,
 } from '@/types/app'
-import { DATA_VERSION } from '@/types/app'
+import {
+  DATA_VERSION,
+  PROJECTS_QUOTES_SCHEMA,
+  SETTINGS_MATERIALS_SUPPLIERS_SCHEMA,
+} from '@/types/app'
 import type { Material } from '@/types/material'
-import type { Project, ProjectExport, ProjectMaterialItem, ProjectRecord } from '@/types/cable'
+import type { ProjectMaterialItem, ProjectRecord } from '@/types/cable'
 import type { Supplier } from '@/types/supplier'
 import type { CompanySettings, QuoteNumberState } from '@/types/company'
 import { defaultCompanySettings } from '@/types/company'
@@ -21,157 +20,60 @@ import { countConductors, parseConduitValue, parseSpec } from '@/utils/parser'
 import { normalizeQuote } from '@/utils/quotes'
 import type { CableRun } from '@/types/cable'
 
-export type ImportResult =
-  | { ok: true; project: Project }
-  | { ok: false; error: string }
-
-export type BackupImportResult =
-  | { ok: true; data: AppDataExport }
-  | { ok: false; error: string }
-
 export type EntityImportResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: string }
 
-export function toExportPayload(project: Project): ProjectExport {
-  const payload: ProjectExport = {
-    projectName: project.projectName,
-    version: PROJECT_VERSION,
-    items: project.items.map(({ description, distance, type, conduit, spec, notes }) => ({
-      description,
-      distance,
-      type,
-      conduit,
-      spec,
-      notes: notes ?? '',
-    })),
-  }
-  if (project.materials && project.materials.length > 0) {
-    payload.materials = project.materials.map(({ description, quantity, unit, unitPrice, notes }) => ({
-      description,
-      quantity,
-      unit,
-      unitPrice,
-      notes: notes ?? '',
-    }))
-  }
-  return payload
-}
+type ProjectImportResult =
+  | { ok: true; project: { projectName: string; version: number; items: CableRun[]; materials: ProjectMaterialItem[] } }
+  | { ok: false; error: string }
 
-export function toAppDataExport(data: AppData): AppDataExport {
+export function toProjectsQuotesTransfer(
+  projects: ProjectRecord[],
+  quotes: Quote[],
+): ProjectsQuotesTransfer {
   return {
+    schema: PROJECTS_QUOTES_SCHEMA,
     version: DATA_VERSION,
-    projects: data.projects,
-    materials: data.materials,
-    suppliers: data.suppliers,
-    quotes: data.quotes,
-    companySettings: data.companySettings,
-    quoteNumberState: data.quoteNumberState,
+    projects,
+    quotes,
   }
 }
 
-export function toMaterialsExport(materials: Material[]): MaterialsExport {
-  return { version: DATA_VERSION, materials }
-}
-
-export function toSuppliersExport(suppliers: Supplier[]): SuppliersExport {
-  return { version: DATA_VERSION, suppliers }
-}
-
-export function toSettingsExport(
+export function toSettingsMaterialsSuppliersTransfer(
   companySettings: CompanySettings,
-  quoteNumberState?: QuoteNumberState,
-): SettingsExport {
-  return { version: DATA_VERSION, companySettings, quoteNumberState }
-}
-
-export function toQuotesExport(quotes: Quote[]): QuotesExport {
-  return { version: DATA_VERSION, quotes }
-}
-
-export function toProjectsExport(projects: ProjectRecord[]): ProjectsExport {
-  return { version: DATA_VERSION, projects }
-}
-
-export function parseImportJson(raw: string): ImportResult {
-  let data: unknown
-  try {
-    data = JSON.parse(raw)
-  } catch {
-    return { ok: false, error: 'invalidJson' }
-  }
-
-  return validateAndNormalize(data)
-}
-
-export function parseBackupImport(raw: string): BackupImportResult {
-  let data: unknown
-  try {
-    data = JSON.parse(raw)
-  } catch {
-    return { ok: false, error: 'invalidJson' }
-  }
-
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    return { ok: false, error: 'invalidStructure' }
-  }
-
-  const obj = data as Record<string, unknown>
-  if (obj.version !== DATA_VERSION) {
-    return { ok: false, error: 'invalidVersion' }
-  }
-
-  if (!Array.isArray(obj.projects) || !Array.isArray(obj.materials) || !Array.isArray(obj.suppliers)) {
-    return { ok: false, error: 'invalidStructure' }
-  }
-
+  quoteNumberState: QuoteNumberState,
+  materials: Material[],
+  suppliers: Supplier[],
+): SettingsMaterialsSuppliersTransfer {
   return {
-    ok: true,
-    data: {
-      version: DATA_VERSION,
-      projects: obj.projects as AppDataExport['projects'],
-      materials: obj.materials as Material[],
-      suppliers: obj.suppliers as Supplier[],
-      quotes: (obj.quotes as AppDataExport['quotes']) ?? [],
-      companySettings: obj.companySettings as AppDataExport['companySettings'],
-      quoteNumberState: obj.quoteNumberState as AppDataExport['quoteNumberState'],
-    },
+    schema: SETTINGS_MATERIALS_SUPPLIERS_SCHEMA,
+    version: DATA_VERSION,
+    companySettings,
+    quoteNumberState,
+    materials,
+    suppliers,
   }
 }
 
-export function parseMaterialsImport(raw: string): EntityImportResult<Material[]> {
-  const parsed = parseJsonObject(raw)
-  if (!parsed.ok) return parsed
-
-  if (Array.isArray(parsed.data.materials)) {
-    return { ok: true, data: parsed.data.materials as Material[] }
-  }
-
-  return { ok: false, error: 'missingMaterials' }
-}
-
-export function parseSuppliersImport(raw: string): EntityImportResult<Supplier[]> {
-  const parsed = parseJsonObject(raw)
-  if (!parsed.ok) return parsed
-
-  if (Array.isArray(parsed.data.suppliers)) {
-    return { ok: true, data: parsed.data.suppliers as Supplier[] }
-  }
-
-  return { ok: false, error: 'missingSuppliers' }
-}
-
-export function parseSettingsImport(raw: string): EntityImportResult<SettingsExport> {
+export function parseSettingsMaterialsSuppliersImport(
+  raw: string,
+): EntityImportResult<SettingsMaterialsSuppliersTransfer> {
   const parsed = parseJsonObject(raw)
   if (!parsed.ok) return parsed
 
   const obj = parsed.data
+  if (obj.schema !== SETTINGS_MATERIALS_SUPPLIERS_SCHEMA) {
+    return { ok: false, error: 'invalidSchema' }
+  }
+  if (obj.version !== DATA_VERSION) {
+    return { ok: false, error: 'invalidVersion' }
+  }
+
   const source =
     obj.companySettings && typeof obj.companySettings === 'object' && !Array.isArray(obj.companySettings)
       ? (obj.companySettings as Record<string, unknown>)
-      : isBareCompanySettings(obj)
-        ? obj
-        : null
+      : null
 
   if (!source) {
     return { ok: false, error: 'missingSettings' }
@@ -195,60 +97,76 @@ export function parseSettingsImport(raw: string): EntityImportResult<SettingsExp
 
   const quoteNumberState = isQuoteNumberState(obj.quoteNumberState)
     ? obj.quoteNumberState
-    : undefined
+    : null
+  if (!quoteNumberState) {
+    return { ok: false, error: 'missingQuoteNumberState' }
+  }
+  if (!Array.isArray(obj.materials)) {
+    return { ok: false, error: 'missingMaterials' }
+  }
+  if (!Array.isArray(obj.suppliers)) {
+    return { ok: false, error: 'missingSuppliers' }
+  }
 
-  return { ok: true, data: { version: DATA_VERSION, companySettings, quoteNumberState } }
+  return {
+    ok: true,
+    data: {
+      schema: SETTINGS_MATERIALS_SUPPLIERS_SCHEMA,
+      version: DATA_VERSION,
+      companySettings,
+      quoteNumberState,
+      materials: obj.materials as Material[],
+      suppliers: obj.suppliers as Supplier[],
+    },
+  }
 }
 
-export function parseQuotesImport(raw: string): EntityImportResult<Quote[]> {
+export function parseProjectsQuotesImport(
+  raw: string,
+): EntityImportResult<ProjectsQuotesTransfer> {
   const parsed = parseJsonObject(raw)
   if (!parsed.ok) return parsed
 
   const obj = parsed.data
-  if (Array.isArray(obj.quotes)) {
-    const quotes = obj.quotes.map(asQuote).filter((q): q is Quote => q !== null)
-    if (quotes.length === 0 && obj.quotes.length > 0) {
-      return { ok: false, error: 'invalidStructure' }
+  if (obj.schema !== PROJECTS_QUOTES_SCHEMA) {
+    return { ok: false, error: 'invalidSchema' }
+  }
+  if (obj.version !== DATA_VERSION) {
+    return { ok: false, error: 'invalidVersion' }
+  }
+  if (!Array.isArray(obj.projects)) {
+    return { ok: false, error: 'missingProjects' }
+  }
+  if (!Array.isArray(obj.quotes)) {
+    return { ok: false, error: 'missingQuotes' }
+  }
+
+  const projects: ProjectRecord[] = []
+  for (const item of obj.projects) {
+    const record = asProjectRecord(item)
+    if (!record) {
+      return { ok: false, error: 'invalidItem' }
     }
-    return { ok: true, data: quotes }
+    projects.push(record)
   }
 
-  const single = asQuote(obj.quote)
-  if (single) {
-    return { ok: true, data: [single] }
+  const quotes = obj.quotes.map(asQuote).filter((q): q is Quote => q !== null)
+  if (quotes.length !== obj.quotes.length) {
+    return { ok: false, error: 'invalidQuote' }
   }
 
-  return { ok: false, error: 'missingQuotes' }
+  return {
+    ok: true,
+    data: {
+      schema: PROJECTS_QUOTES_SCHEMA,
+      version: DATA_VERSION,
+      projects,
+      quotes,
+    },
+  }
 }
 
-export type ProjectsImportResult =
-  | { ok: true; kind: 'single'; project: Project }
-  | { ok: true; kind: 'collection'; projects: ProjectRecord[] }
-  | { ok: false; error: string }
-
-export function parseProjectsImport(raw: string): ProjectsImportResult {
-  const parsed = parseJsonObject(raw)
-  if (!parsed.ok) return parsed
-
-  const obj = parsed.data
-  if (Array.isArray(obj.projects)) {
-    const projects: ProjectRecord[] = []
-    for (const item of obj.projects) {
-      const record = asProjectRecord(item)
-      if (!record) {
-        return { ok: false, error: 'invalidItem' }
-      }
-      projects.push(record)
-    }
-    return { ok: true, kind: 'collection', projects }
-  }
-
-  const single = validateAndNormalize(obj)
-  if (!single.ok) return single
-  return { ok: true, kind: 'single', project: single.project }
-}
-
-export function validateAndNormalize(data: unknown): ImportResult {
+export function validateAndNormalize(data: unknown): ProjectImportResult {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return { ok: false, error: 'invalidStructure' }
   }
@@ -378,16 +296,6 @@ function parseJsonObject(
   }
 
   return { ok: true, data: data as Record<string, unknown> }
-}
-
-function isBareCompanySettings(obj: Record<string, unknown>): boolean {
-  return (
-    typeof obj.name === 'string' &&
-    typeof obj.quotePrefix === 'string' &&
-    !('companySettings' in obj) &&
-    !('projects' in obj) &&
-    !('materials' in obj)
-  )
 }
 
 function isQuoteNumberState(value: unknown): value is QuoteNumberState {

@@ -14,8 +14,7 @@ import { cableMaterialSourceKey } from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
-import { createId, downloadJson, slugifyFilename } from '@/utils/cn'
-import { parseImportJson, toExportPayload } from '@/services/importExport'
+import { createId } from '@/utils/cn'
 import { catalogPriceForLine } from '@/utils/pricing/catalogLine'
 
 const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
@@ -99,7 +98,6 @@ export function useProject(projectId: string) {
   const [sortField, setSortField] = useState<SortField>('description')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [deletedStack, setDeletedStack] = useState<CableRun[]>([])
-  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const projectNameInputRef = useRef<HTMLInputElement | null>(null)
 
   const summary = useMemo(() => calculateProjectSummary(project), [project])
@@ -136,17 +134,6 @@ export function useProject(projectId: string) {
       updateProject(projectId, patch)
     },
     [projectId, projectRecord, updateProject],
-  )
-
-  const resolveImportError = useCallback(
-    (error: string): string => {
-      if (error.includes(':')) {
-        const [key, index] = error.split(':')
-        return t(`importErrors.${key}`, { index: Number(index) + 1 })
-      }
-      return t(`importErrors.${error}`)
-    },
-    [t],
   )
 
   const setProjectName = useCallback(
@@ -299,50 +286,9 @@ export function useProject(projectId: string) {
     [patchProject, projectMaterials],
   )
 
-  const exportProject = useCallback(() => {
-    if (!project.projectName.trim()) {
-      toast.error(t('toast.projectNameRequired'))
-      projectNameInputRef.current?.focus()
-      return
-    }
-    downloadJson(`${slugifyFilename(project.projectName)}.json`, toExportPayload(project))
-    toast.success(t('toast.exported'))
-  }, [project, t])
-
   const printProject = useCallback(() => {
     window.print()
   }, [])
-
-  const importFromText = useCallback(
-    (raw: string) => {
-      const result = parseImportJson(raw)
-      if (!result.ok) {
-        toast.error(t('toast.importFailed', { reason: resolveImportError(result.error) }))
-        return
-      }
-      patchProject({
-        projectName: result.project.projectName,
-        items: result.project.items,
-        materials: result.project.materials ?? [],
-      })
-      setDeletedStack([])
-      toast.success(t('toast.imported'))
-    },
-    [patchProject, resolveImportError, t],
-  )
-
-  const triggerImport = useCallback(() => {
-    fileInputRef.current?.click()
-  }, [])
-
-  const onFileSelected = useCallback(
-    async (file: File | null) => {
-      if (!file) return
-      const text = await file.text()
-      importFromText(text)
-    },
-    [importFromText],
-  )
 
   const toggleSort = useCallback((field: SortField) => {
     setSortField((current) => {
@@ -384,13 +330,7 @@ export function useProject(projectId: string) {
       const meta = event.ctrlKey || event.metaKey
       if (!meta) return
       const key = event.key.toLowerCase()
-      if (key === 's') {
-        event.preventDefault()
-        exportProject()
-      } else if (key === 'o') {
-        event.preventDefault()
-        triggerImport()
-      } else if (key === 'z' && !event.shiftKey) {
+      if (key === 'z' && !event.shiftKey) {
         const target = event.target as HTMLElement | null
         const tag = target?.tagName
         if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) {
@@ -403,7 +343,7 @@ export function useProject(projectId: string) {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [exportProject, triggerImport, undoDelete])
+  }, [undoDelete])
 
   return {
     project,
@@ -426,11 +366,7 @@ export function useProject(projectId: string) {
       project.projectName.trim().length > 0 ||
       projectMaterials.length > 0,
     duplicateRun,
-    exportProject,
     printProject,
-    triggerImport,
-    onFileSelected,
-    fileInputRef,
     projectNameInputRef,
     projectMaterials,
     addMaterial,

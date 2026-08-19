@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { Cable, Download, FileText, Package, Printer, Upload } from 'lucide-react'
+import { Cable, FileText, Package, Printer } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { CableRunsTable } from '@/components/project/CableRunsTable'
@@ -53,11 +53,7 @@ function ProjectView({
     canUndo,
     canClear,
     duplicateRun,
-    exportProject,
     printProject,
-    triggerImport,
-    onFileSelected,
-    fileInputRef,
     projectNameInputRef,
     projectMaterials,
     addMaterial,
@@ -80,14 +76,6 @@ function ProjectView({
       <div className="flex flex-wrap items-center justify-between gap-2 no-print">
         <div />
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={triggerImport}>
-            <Upload className="h-4 w-4" />
-            {t('header.import')}
-          </Button>
-          <Button variant="outline" onClick={exportProject}>
-            <Download className="h-4 w-4" />
-            {t('header.export')}
-          </Button>
           <Button variant="outline" onClick={printProject}>
             <Printer className="h-4 w-4" />
             {t('header.print')}
@@ -100,17 +88,6 @@ function ProjectView({
           </Button>
         </div>
       </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json,.json"
-        className="hidden"
-        onChange={(e) => {
-          void onFileSelected(e.target.files?.[0] ?? null)
-          e.target.value = ''
-        }}
-      />
 
       <AppHeader
         projectName={project.projectName}

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
-  parseProjectsImport,
-  parseQuotesImport,
-  parseSettingsImport,
-  toProjectsExport,
-  toQuotesExport,
-  toSettingsExport,
+  parseProjectsQuotesImport,
+  parseSettingsMaterialsSuppliersImport,
+  toProjectsQuotesTransfer,
+  toSettingsMaterialsSuppliersTransfer,
 } from '@/services/importExport'
 import { defaultCompanySettings, defaultQuoteNumberState } from '@/types/company'
 import type { Quote } from '@/types/quote'
@@ -44,79 +42,92 @@ const sampleQuote: Quote = {
   updatedAt: '2026-08-18T00:00:00.000Z',
 }
 
-describe('parseSettingsImport', () => {
-  it('round-trips company settings', () => {
-    const payload = toSettingsExport(defaultCompanySettings(), defaultQuoteNumberState())
-    const result = parseSettingsImport(JSON.stringify(payload))
+describe('parseSettingsMaterialsSuppliersImport', () => {
+  it('round-trips settings, materials and suppliers', () => {
+    const payload = toSettingsMaterialsSuppliersTransfer(
+      defaultCompanySettings(),
+      defaultQuoteNumberState(),
+      [],
+      [],
+    )
+    const result = parseSettingsMaterialsSuppliersImport(JSON.stringify(payload))
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.data.companySettings.quotePrefix).toBe('ORC')
     expect(result.data.quoteNumberState?.prefix).toBe('ORC')
+    expect(result.data.materials).toEqual([])
+    expect(result.data.suppliers).toEqual([])
   })
 
-  it('accepts a bare company settings object', () => {
-    const result = parseSettingsImport(
+  it('rejects files with the wrong schema', () => {
+    const result = parseSettingsMaterialsSuppliersImport(
       JSON.stringify({
-        name: 'Flow Ltd',
-        defaultTaxRate: 13,
-        defaultMargin: 20,
-        quotePrefix: 'CF',
+        schema: 'cableflow/projects-quotes',
+        version: 2,
+        companySettings: defaultCompanySettings(),
+        quoteNumberState: defaultQuoteNumberState(),
+        materials: [],
+        suppliers: [],
       }),
     )
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.data.companySettings.name).toBe('Flow Ltd')
-    expect(result.data.companySettings.quotePrefix).toBe('CF')
-  })
-
-  it('rejects files without settings', () => {
-    const result = parseSettingsImport(JSON.stringify({ materials: [] }))
     expect(result.ok).toBe(false)
     if (result.ok) return
-    expect(result.error).toBe('missingSettings')
-  })
-})
-
-describe('parseQuotesImport', () => {
-  it('imports a quotes collection', () => {
-    const result = parseQuotesImport(JSON.stringify(toQuotesExport([sampleQuote])))
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.data).toHaveLength(1)
-    expect(result.data[0]?.number).toBe('ORC-2026-001')
+    expect(result.error).toBe('invalidSchema')
   })
 
-  it('imports a single quote file', () => {
-    const result = parseQuotesImport(JSON.stringify({ version: 2, quote: sampleQuote }))
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.data[0]?.id).toBe('quote-1')
-  })
-})
-
-describe('parseProjectsImport', () => {
-  it('imports a single project export', () => {
-    const result = parseProjectsImport(
+  it('rejects files without quote numbering state', () => {
+    const result = parseSettingsMaterialsSuppliersImport(
       JSON.stringify({
-        projectName: 'House A',
-        version: 1,
-        items: sampleProject.items,
+        schema: 'cableflow/settings-materials-suppliers',
+        version: 2,
+        companySettings: defaultCompanySettings(),
+        materials: [],
+        suppliers: [],
       }),
+    )
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBe('missingQuoteNumberState')
+  })
+})
+
+describe('parseProjectsQuotesImport', () => {
+  it('imports projects and quotes from the bundled schema', () => {
+    const result = parseProjectsQuotesImport(
+      JSON.stringify(toProjectsQuotesTransfer([sampleProject], [sampleQuote])),
     )
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.kind).toBe('single')
-    if (result.kind !== 'single') return
-    expect(result.project.projectName).toBe('House A')
+    expect(result.data.projects).toHaveLength(1)
+    expect(result.data.projects[0]?.id).toBe('proj-1')
+    expect(result.data.quotes).toHaveLength(1)
+    expect(result.data.quotes[0]?.number).toBe('ORC-2026-001')
   })
 
-  it('imports a projects collection and keeps ids', () => {
-    const result = parseProjectsImport(JSON.stringify(toProjectsExport([sampleProject])))
-    expect(result.ok).toBe(true)
-    if (!result.ok) return
-    expect(result.kind).toBe('collection')
-    if (result.kind !== 'collection') return
-    expect(result.projects[0]?.id).toBe('proj-1')
-    expect(result.projects[0]?.projectName).toBe('House A')
+  it('rejects bundled files without projects', () => {
+    const result = parseProjectsQuotesImport(
+      JSON.stringify({
+        schema: 'cableflow/projects-quotes',
+        version: 2,
+        quotes: [sampleQuote],
+      }),
+    )
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBe('missingProjects')
+  })
+
+  it('rejects invalid quote records', () => {
+    const result = parseProjectsQuotesImport(
+      JSON.stringify({
+        schema: 'cableflow/projects-quotes',
+        version: 2,
+        projects: [sampleProject],
+        quotes: [{ id: 'q-1' }],
+      }),
+    )
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error).toBe('invalidQuote')
   })
 })
