@@ -21,6 +21,7 @@ import {
   cableSelectionsFromProject,
   extraProjectMaterials,
 } from '@/utils/cable/quoteImport'
+import { buildQuoteItemsFromCircuits } from '@/utils/electrical/quoteIntegration'
 import { normalizeQuote } from '@/utils/quotes'
 import { formatMeters } from '@/utils/cn'
 
@@ -28,7 +29,7 @@ export function QuoteFromProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { projects, materials, createQuote, upsertQuote, companySettings, locale } = useAppData()
+  const { projects, materials, createQuote, upsertQuote, companySettings, locale, circuits } = useAppData()
 
   const project = projects.find((p) => p.id === projectId)
   const requirements = useMemo(
@@ -43,6 +44,14 @@ export function QuoteFromProjectPage() {
     () => (project ? extraProjectMaterials(project) : []),
     [project],
   )
+  const projectCircuits = useMemo(
+    () => circuits.filter((circuit) => circuit.projectId === projectId),
+    [circuits, projectId],
+  )
+  const circuitItemsPreview = useMemo(
+    () => buildQuoteItemsFromCircuits(projectCircuits, materials, companySettings.defaultMargin),
+    [projectCircuits, materials, companySettings.defaultMargin],
+  )
 
   const [selections, setSelections] = useState<Record<string, string>>({})
 
@@ -56,7 +65,7 @@ export function QuoteFromProjectPage() {
   const unmapped = requirements.filter((r) => !mergedSelections[r.key])
   const mapped = requirements.filter((r) => mergedSelections[r.key])
   const allSelected = unmapped.length === 0
-  const canCreate = allSelected && (requirements.length > 0 || extras.length > 0)
+  const canCreate = allSelected && (requirements.length > 0 || extras.length > 0 || circuitItemsPreview.length > 0)
 
   const setSelection = (key: string, materialId: string) => {
     setSelections((prev) => ({ ...prev, [key]: materialId }))
@@ -83,12 +92,17 @@ export function QuoteFromProjectPage() {
       materials,
       companySettings.defaultMargin,
     )
+    const circuitItems = buildQuoteItemsFromCircuits(
+      projectCircuits,
+      materials,
+      companySettings.defaultMargin,
+    )
 
     const finalized = normalizeQuote({
       ...quote,
       projectId,
       client: { ...quote.client, name: project.projectName },
-      items: [...cableItems, ...extraItems],
+      items: [...cableItems, ...extraItems, ...circuitItems],
     })
 
     upsertQuote(finalized)
@@ -98,7 +112,7 @@ export function QuoteFromProjectPage() {
 
   const materialName = (id: string) => materials.find((m) => m.id === id)?.name ?? id
 
-  if (requirements.length === 0 && extras.length === 0) {
+  if (requirements.length === 0 && extras.length === 0 && circuitItemsPreview.length === 0) {
     return (
       <div className="space-y-4">
         <Header projectName={project.projectName} />
@@ -196,6 +210,26 @@ export function QuoteFromProjectPage() {
               {extras.map((item) => (
                 <li key={item.id}>
                   {item.description || '—'} · {item.quantity} {item.unit}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {circuitItemsPreview.length > 0 ? (
+        <Card className="border-border/70">
+          <CardHeader>
+            <CardTitle className="text-base">{t('quotes.fromProject.circuitProtections')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-2 text-xs text-muted-foreground">
+              {t('quotes.fromProject.circuitProtectionCount', { count: circuitItemsPreview.length })}
+            </p>
+            <ul className="space-y-1 text-sm">
+              {circuitItemsPreview.map((item) => (
+                <li key={item.id}>
+                  {item.description} · {item.quantity} {item.unit}
                 </li>
               ))}
             </ul>

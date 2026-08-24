@@ -1,5 +1,6 @@
 import type { AppData } from '@/types/app'
 import { DATA_VERSION } from '@/types/app'
+import type { Circuit, ElectricalRuleSet, LoadType } from '@/types/electrical'
 import type { Material } from '@/types/material'
 import type { Quote } from '@/types/quote'
 import type { Supplier } from '@/types/supplier'
@@ -11,19 +12,66 @@ import {
 } from '@/services/storage/defaultAppData'
 import { readJson } from '@/services/storage/baseStorage'
 import { APP_DATA_KEY, LEGACY_PROJECT_KEY } from '@/services/storage/keys'
+import {
+  createDefaultElectricalRuleSets,
+  createDefaultLoadTypes,
+} from '@/data/electrical'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isLegacyV2(value: unknown): value is Omit<AppData, 'circuits' | 'loadTypes' | 'electricalRuleSets' | 'version'> & { version: 2 } {
+  if (!isRecord(value)) return false
+  return (
+    value.version === 2 &&
+    Array.isArray(value.projects) &&
+    Array.isArray(value.materials) &&
+    Array.isArray(value.suppliers) &&
+    Array.isArray(value.quotes) &&
+    typeof value.companySettings === 'object' &&
+    value.companySettings !== null
+  )
+}
 
 function isAppData(value: unknown): value is AppData {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  const obj = value as Record<string, unknown>
+  if (!isRecord(value)) return false
   return (
-    obj.version === DATA_VERSION &&
-    Array.isArray(obj.projects) &&
-    Array.isArray(obj.materials) &&
-    Array.isArray(obj.suppliers) &&
-    Array.isArray(obj.quotes) &&
-    typeof obj.companySettings === 'object' &&
-    obj.companySettings !== null
+    value.version === DATA_VERSION &&
+    Array.isArray(value.projects) &&
+    Array.isArray(value.materials) &&
+    Array.isArray(value.suppliers) &&
+    Array.isArray(value.quotes) &&
+    Array.isArray(value.circuits) &&
+    Array.isArray(value.loadTypes) &&
+    Array.isArray(value.electricalRuleSets) &&
+    typeof value.companySettings === 'object' &&
+    value.companySettings !== null
   )
+}
+
+function migrateV2ToV3(raw: Record<string, unknown>): AppData {
+  const defaults = createDefaultAppData()
+  return normalizeAppData({
+    ...defaults,
+    ...raw,
+    version: DATA_VERSION,
+    projects: (raw.projects as AppData['projects']) ?? defaults.projects,
+    materials: (raw.materials as Material[]) ?? [],
+    suppliers: (raw.suppliers as Supplier[]) ?? [],
+    quotes: (raw.quotes as Quote[]) ?? [],
+    circuits: Array.isArray(raw.circuits) ? (raw.circuits as Circuit[]) : [],
+    loadTypes: Array.isArray(raw.loadTypes) && raw.loadTypes.length > 0
+      ? (raw.loadTypes as LoadType[])
+      : defaults.loadTypes,
+    electricalRuleSets:
+      Array.isArray(raw.electricalRuleSets) && raw.electricalRuleSets.length > 0
+        ? (raw.electricalRuleSets as ElectricalRuleSet[])
+        : defaults.electricalRuleSets,
+    companySettings: raw.companySettings as AppData['companySettings'],
+    quoteNumberState: (raw.quoteNumberState as AppData['quoteNumberState']) ?? defaults.quoteNumberState,
+    activeProjectId: raw.activeProjectId as string | undefined,
+  })
 }
 
 function normalizeAppData(raw: AppData): AppData {
@@ -34,6 +82,11 @@ function normalizeAppData(raw: AppData): AppData {
     materials: raw.materials ?? [],
     suppliers: raw.suppliers ?? [],
     quotes: raw.quotes ?? [],
+    circuits: raw.circuits ?? [],
+    loadTypes: raw.loadTypes?.length ? raw.loadTypes : createDefaultLoadTypes(),
+    electricalRuleSets: raw.electricalRuleSets?.length
+      ? raw.electricalRuleSets
+      : createDefaultElectricalRuleSets(),
     companySettings: { ...defaults.companySettings, ...raw.companySettings },
     quoteNumberState: raw.quoteNumberState ?? defaults.quoteNumberState,
     activeProjectId:
@@ -75,8 +128,11 @@ export function loadAppData(): AppData {
     return normalizeAppData(stored)
   }
 
-  const migrated = migrateLegacyProject()
-  return migrated
+  if (isLegacyV2(stored)) {
+    return migrateV2ToV3(stored)
+  }
+
+  return migrateLegacyProject()
 }
 
 export function mergeMaterialsImport(
@@ -109,6 +165,14 @@ export function mergeQuotesImport(current: Quote[], incoming: Quote[]): Quote[] 
   return [...map.values()]
 }
 
+export function mergeById<T extends { id: string }>(current: T[], incoming: T[]): T[] {
+  const map = new Map(current.map((item) => [item.id, item]))
+  for (const item of incoming) {
+    map.set(item.id, item)
+  }
+  return [...map.values()]
+}
+
 export function mergeAppDataImport(current: AppData, incoming: AppData): AppData {
   const projectMap = new Map(current.projects.map((p) => [p.id, p]))
   for (const p of incoming.projects) {
@@ -121,6 +185,9 @@ export function mergeAppDataImport(current: AppData, incoming: AppData): AppData
     materials: mergeMaterialsImport(current.materials, incoming.materials),
     suppliers: mergeSuppliersImport(current.suppliers, incoming.suppliers),
     quotes: mergeQuotesImport(current.quotes, incoming.quotes),
+    circuits: mergeById(current.circuits, incoming.circuits ?? []),
+    loadTypes: mergeById(current.loadTypes, incoming.loadTypes ?? []),
+    electricalRuleSets: mergeById(current.electricalRuleSets, incoming.electricalRuleSets ?? []),
     companySettings: incoming.companySettings.name
       ? incoming.companySettings
       : current.companySettings,

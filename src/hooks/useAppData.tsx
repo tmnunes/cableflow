@@ -22,10 +22,12 @@ import {
 } from '@/services/storage/preferencesStorage'
 import type { CompanySettings, QuoteNumberState } from '@/types/company'
 import type { Quote } from '@/types/quote'
+import type { Circuit, ElectricalRuleSet, LoadType } from '@/types/electrical'
 import { allocateQuoteNumber } from '@/services/quotes/quoteNumber'
 import { createProjectRecord } from '@/services/storage/defaultAppData'
 import { normalizeQuote } from '@/utils/quotes'
 import { createId } from '@/utils/cn'
+import { calculateCircuitDesign } from '@/utils/electrical'
 
 function nowIso(): string {
   return new Date().toISOString()
@@ -68,6 +70,25 @@ interface AppDataContextValue {
   deleteQuote: (id: string) => void
   createQuote: (projectId?: string) => Quote
   importQuotes: (quotes: Quote[]) => void
+
+  // Circuits
+  circuits: Circuit[]
+  upsertCircuit: (circuit: Circuit) => void
+  deleteCircuit: (id: string) => void
+  importCircuits: (circuits: Circuit[]) => void
+  createCircuit: (projectId: string, name?: string) => Circuit
+
+  // Load types
+  loadTypes: LoadType[]
+  upsertLoadType: (loadType: LoadType) => void
+  deleteLoadType: (id: string) => void
+  setLoadTypes: (loadTypes: LoadType[]) => void
+
+  // Electrical rules
+  electricalRuleSets: ElectricalRuleSet[]
+  upsertElectricalRuleSet: (ruleSet: ElectricalRuleSet) => void
+  setElectricalRuleSets: (ruleSets: ElectricalRuleSet[]) => void
+  activeRuleSet: ElectricalRuleSet | undefined
 
   // Company
   companySettings: CompanySettings
@@ -140,17 +161,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const deleteProject = useCallback((id: string) => {
     setData((prev) => {
       const nextProjects = prev.projects.filter((p) => p.id !== id)
+      const nextCircuits = prev.circuits.filter((c) => c.projectId !== id)
       if (nextProjects.length === 0) {
         const fallback = createProjectRecord({ projectName: '', items: [] })
         return {
           ...prev,
           projects: [fallback],
+          circuits: nextCircuits,
           activeProjectId: fallback.id,
         }
       }
       const nextActive =
         prev.activeProjectId === id ? nextProjects[0]!.id : prev.activeProjectId
-      return { ...prev, projects: nextProjects, activeProjectId: nextActive }
+      return { ...prev, projects: nextProjects, circuits: nextCircuits, activeProjectId: nextActive }
     })
   }, [])
 
@@ -166,9 +189,20 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
         materials: (source.materials ?? []).map((m) => ({ ...m, id: createId() })),
       })
       const duplicated = copy
+      const copiedCircuits = prev.circuits
+        .filter((circuit) => circuit.projectId === id)
+        .map((circuit) => ({
+          ...circuit,
+          id: createId(),
+          projectId: duplicated.id,
+          linkedCableRunId: undefined,
+          createdAt: nowIso(),
+          updatedAt: nowIso(),
+        }))
       return {
         ...prev,
         projects: [...prev.projects, duplicated],
+        circuits: [...prev.circuits, ...copiedCircuits],
         activeProjectId: duplicated.id,
       }
     })
@@ -280,6 +314,113 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const refreshCircuit = useCallback((circuit: Circuit, dataSnapshot: AppData): Circuit => {
+    const ruleSet = dataSnapshot.electricalRuleSets.find((item) => item.active) ?? dataSnapshot.electricalRuleSets[0]
+    if (!ruleSet) return { ...circuit, updatedAt: nowIso() }
+    return {
+      ...circuit,
+      design: calculateCircuitDesign({
+        circuit,
+        ruleSet,
+        loadTypes: dataSnapshot.loadTypes,
+      }),
+      updatedAt: nowIso(),
+    }
+  }, [])
+
+  const upsertCircuit = useCallback((circuit: Circuit) => {
+    setData((prev) => {
+      const next = refreshCircuit(circuit, prev)
+      const exists = prev.circuits.some((item) => item.id === next.id)
+      const circuits = exists
+        ? prev.circuits.map((item) => (item.id === next.id ? next : item))
+        : [...prev.circuits, next]
+      return { ...prev, circuits }
+    })
+  }, [refreshCircuit])
+
+  const deleteCircuit = useCallback((id: string) => {
+    setData((prev) => ({
+      ...prev,
+      circuits: prev.circuits.filter((item) => item.id !== id),
+    }))
+  }, [])
+
+  const importCircuits = useCallback((circuits: Circuit[]) => {
+    setData((prev) => {
+      const map = new Map(prev.circuits.map((item) => [item.id, item]))
+      for (const circuit of circuits) {
+        map.set(circuit.id, refreshCircuit(circuit, prev))
+      }
+      return { ...prev, circuits: [...map.values()] }
+    })
+  }, [refreshCircuit])
+
+  const createCircuit = useCallback((projectId: string, name = ''): Circuit => {
+    const circuit: Circuit = {
+      id: createId(),
+      projectId,
+      name,
+      category: 'lighting',
+      loads: [],
+      installation: { systemPhase: 'single-phase' },
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+    }
+    upsertCircuit(circuit)
+    return circuit
+  }, [upsertCircuit])
+
+  const upsertLoadType = useCallback((loadType: LoadType) => {
+    setData((prev) => {
+      const exists = prev.loadTypes.some((item) => item.id === loadType.id)
+      const loadTypes = exists
+        ? prev.loadTypes.map((item) => (item.id === loadType.id ? loadType : item))
+        : [...prev.loadTypes, loadType]
+      return { ...prev, loadTypes }
+    })
+  }, [])
+
+  const deleteLoadType = useCallback((id: string) => {
+    setData((prev) => ({
+      ...prev,
+      loadTypes: prev.loadTypes.filter((item) => item.id !== id),
+    }))
+  }, [])
+
+  const setLoadTypes = useCallback((loadTypes: LoadType[]) => {
+    setData((prev) => ({ ...prev, loadTypes }))
+  }, [])
+
+  const upsertElectricalRuleSet = useCallback((ruleSet: ElectricalRuleSet) => {
+    setData((prev) => {
+      const exists = prev.electricalRuleSets.some((item) => item.id === ruleSet.id)
+      const electricalRuleSets = exists
+        ? prev.electricalRuleSets.map((item) => (item.id === ruleSet.id ? ruleSet : item))
+        : [...prev.electricalRuleSets, ruleSet]
+      const snapshot = { ...prev, electricalRuleSets }
+      return {
+        ...snapshot,
+        circuits: prev.circuits.map((circuit) => refreshCircuit(circuit, snapshot)),
+      }
+    })
+  }, [refreshCircuit])
+
+  const setElectricalRuleSets = useCallback((electricalRuleSets: ElectricalRuleSet[]) => {
+    setData((prev) => {
+      const snapshot = { ...prev, electricalRuleSets }
+      return {
+        ...snapshot,
+        circuits: prev.circuits.map((circuit) => refreshCircuit(circuit, snapshot)),
+      }
+    })
+  }, [refreshCircuit])
+
+  const activeRuleSet = useMemo(
+    () => data.electricalRuleSets.find((item) => item.active) ?? data.electricalRuleSets[0],
+    [data.electricalRuleSets],
+  )
+
   const updateCompanySettings = useCallback((patch: Partial<CompanySettings>) => {
     setData((prev) => ({
       ...prev,
@@ -335,6 +476,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteQuote,
       createQuote,
       importQuotes,
+      circuits: data.circuits,
+      upsertCircuit,
+      deleteCircuit,
+      importCircuits,
+      createCircuit,
+      loadTypes: data.loadTypes,
+      upsertLoadType,
+      deleteLoadType,
+      setLoadTypes,
+      electricalRuleSets: data.electricalRuleSets,
+      upsertElectricalRuleSet,
+      setElectricalRuleSets,
+      activeRuleSet,
       companySettings: data.companySettings,
       updateCompanySettings,
       importCompanySettings,
@@ -365,6 +519,16 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteQuote,
       createQuote,
       importQuotes,
+      upsertCircuit,
+      deleteCircuit,
+      importCircuits,
+      createCircuit,
+      upsertLoadType,
+      deleteLoadType,
+      setLoadTypes,
+      upsertElectricalRuleSet,
+      setElectricalRuleSets,
+      activeRuleSet,
       updateCompanySettings,
       importCompanySettings,
     ],
@@ -432,5 +596,20 @@ export function createEmptyQuote(
     taxRate: settings.defaultTaxRate,
     createdAt: now,
     updatedAt: now,
+  }
+}
+
+export function createEmptyLoadType(overrides?: Partial<LoadType>): LoadType {
+  const now = nowIso()
+  return {
+    id: createId(),
+    name: '',
+    category: 'other',
+    defaultUnitPower: 0,
+    unit: 'unit',
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+    ...overrides,
   }
 }

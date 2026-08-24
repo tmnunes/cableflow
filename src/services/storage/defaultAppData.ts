@@ -8,6 +8,10 @@ import {
 import { PROJECT_VERSION } from '@/services/storage/keys'
 import { SAMPLE_PROJECT } from '@/data/sampleProject'
 import { createId } from '@/utils/cn'
+import {
+  createDefaultElectricalRuleSets,
+  createDefaultLoadTypes,
+} from '@/data/electrical'
 
 function nowIso(): string {
   return new Date().toISOString()
@@ -42,12 +46,16 @@ export function createSampleProjectRecord(): ProjectRecord {
 export function createDefaultAppData(): AppData {
   const sample = createSampleProjectRecord()
   const companySettings = defaultCompanySettings()
+  const timestamp = nowIso()
   return {
     version: DATA_VERSION,
     projects: [sample],
     materials: [],
     suppliers: [],
     quotes: [],
+    circuits: [],
+    loadTypes: createDefaultLoadTypes(timestamp),
+    electricalRuleSets: createDefaultElectricalRuleSets(timestamp),
     companySettings,
     quoteNumberState: defaultQuoteNumberState(companySettings.quotePrefix),
     activeProjectId: sample.id,

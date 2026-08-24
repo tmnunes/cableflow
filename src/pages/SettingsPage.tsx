@@ -8,7 +8,7 @@ import {
   parseSettingsMaterialsSuppliersImport,
   toSettingsMaterialsSuppliersTransfer,
 } from '@/services/importExport'
-import { mergeMaterialsImport, mergeSuppliersImport } from '@/services/storage/migration'
+import { mergeById, mergeMaterialsImport, mergeSuppliersImport } from '@/services/storage/migration'
 import { downloadJson } from '@/utils/cn'
 
 export function SettingsPage() {
@@ -18,6 +18,8 @@ export function SettingsPage() {
     suppliers,
     setMaterials,
     setSuppliers,
+    setLoadTypes,
+    setElectricalRuleSets,
     companySettings,
     updateCompanySettings,
     importCompanySettings,
@@ -32,6 +34,8 @@ export function SettingsPage() {
         data.quoteNumberState,
         materials,
         suppliers,
+        data.loadTypes,
+        data.electricalRuleSets,
       ),
     )
     toast.success(t('settings.settingsMaterialsSuppliersExported'))
@@ -48,6 +52,8 @@ export function SettingsPage() {
     if (!window.confirm(t('settings.settingsMaterialsSuppliersImportConfirm'))) return
     setMaterials(mergeMaterialsImport(materials, result.data.materials))
     setSuppliers(mergeSuppliersImport(suppliers, result.data.suppliers))
+    setLoadTypes(mergeById(data.loadTypes, result.data.loadTypes))
+    setElectricalRuleSets(mergeById(data.electricalRuleSets, result.data.electricalRuleSets))
     importCompanySettings(result.data.companySettings, result.data.quoteNumberState)
     toast.success(t('settings.settingsMaterialsSuppliersImported'))
   }
