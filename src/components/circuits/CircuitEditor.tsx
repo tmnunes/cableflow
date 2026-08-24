@@ -130,7 +130,7 @@ export function CircuitEditor({
             ) : null}
           </div>
         </div>
-        <Button variant="ghost" className="text-destructive" onClick={onDelete}>
+        <Button variant="ghost" className="text-destructive" type="button" onClick={onDelete}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </CardHeader>

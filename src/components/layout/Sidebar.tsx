@@ -56,27 +56,27 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
 
       {navItems.map(({ to, icon: Icon, labelKey, dynamic }) => {
         const path = to === '/circuits' ? circuitsPath : dynamic ? cablesPath : to
+        const tab = new URLSearchParams(location.search).get('tab')
+        const onProjectWorkspace = /\/projects\/[^/]+\/cables\/?$/.test(location.pathname)
+        const active =
+          to === '/circuits'
+            ? onProjectWorkspace && (tab === 'circuits' || tab === 'panel')
+            : to === '/cables'
+              ? onProjectWorkspace && tab !== 'circuits' && tab !== 'panel'
+              : to === '/projects'
+                ? location.pathname === '/projects'
+                : location.pathname === to || location.pathname.startsWith(`${to}/`)
         return (
           <NavLink
             key={to}
             to={path}
             onClick={onNavigate}
-            className={() => {
-              const tab = new URLSearchParams(location.search).get('tab')
-              const onProjectCables = location.pathname.includes('/cables')
-              const active =
-                to === '/circuits'
-                  ? onProjectCables && (tab === 'circuits' || tab === 'panel')
-                  : to === '/cables'
-                    ? onProjectCables && tab !== 'circuits' && tab !== 'panel'
-                    : location.pathname === to || location.pathname.startsWith(`${to}/`)
-              return cn(
-                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                active
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-              )
-            }}
+            className={cn(
+              'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+              active
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+            )}
           >
             <Icon className="h-4 w-4 shrink-0" />
             {t(labelKey)}

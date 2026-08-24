@@ -1,4 +1,5 @@
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { useEffect } from 'react'
 import { Cable, CircuitBoard, FileText, Package, PanelTop, Printer } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { CircuitsPanel } from '@/components/circuits/CircuitsPanel'
@@ -16,7 +17,13 @@ type Tab = 'cables' | 'materials' | 'circuits' | 'panel'
 
 export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { projects, locale } = useAppData()
+  const { projects, locale, setActiveProjectId } = useAppData()
+
+  useEffect(() => {
+    if (projectId && projects.some((project) => project.id === projectId)) {
+      setActiveProjectId(projectId)
+    }
+  }, [projectId, projects, setActiveProjectId])
 
   if (!projectId || !projects.some((p) => p.id === projectId)) {
     return <Navigate to="/projects" replace />

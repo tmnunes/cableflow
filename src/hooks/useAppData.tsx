@@ -127,7 +127,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const replaceAppData = useCallback((next: AppData) => setData(next), [])
 
   const setActiveProjectId = useCallback((id: string) => {
-    setData((prev) => ({ ...prev, activeProjectId: id }))
+    setData((prev) => (prev.activeProjectId === id ? prev : { ...prev, activeProjectId: id }))
   }, [])
 
   const projects = data.projects
