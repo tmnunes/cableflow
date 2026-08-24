@@ -15,6 +15,7 @@ import { APP_DATA_KEY, LEGACY_PROJECT_KEY } from '@/services/storage/keys'
 import {
   createDefaultElectricalRuleSets,
   createDefaultLoadTypes,
+  createDefaultProtectionMaterials,
 } from '@/data/electrical'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -74,27 +75,56 @@ function migrateV2ToV3(raw: Record<string, unknown>): AppData {
   })
 }
 
+function nowIso(): string {
+  return new Date().toISOString()
+}
+
+function mergeExampleCatalogs(raw: AppData): AppData {
+  const timestamp = nowIso()
+  const exampleMaterials = createDefaultProtectionMaterials(timestamp)
+  const upgradedRuleSets = (raw.electricalRuleSets ?? []).map((ruleSet) => {
+    if (ruleSet.id === 'example-default-v1' && ruleSet.isExample && ruleSet.version === '1.0') {
+      const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
+      return { ...fresh, createdAt: ruleSet.createdAt }
+    }
+    return ruleSet
+  })
+
+  return {
+    ...raw,
+    materials: mergeById(raw.materials ?? [], exampleMaterials),
+    electricalRuleSets: upgradedRuleSets.length
+      ? upgradedRuleSets
+      : createDefaultElectricalRuleSets(timestamp),
+  }
+}
+
 function normalizeAppData(raw: AppData): AppData {
   const defaults = createDefaultAppData()
+  const merged = mergeExampleCatalogs(raw)
   return {
     version: DATA_VERSION,
-    projects: raw.projects.length > 0 ? raw.projects : defaults.projects,
-    materials: raw.materials ?? [],
-    suppliers: raw.suppliers ?? [],
-    quotes: raw.quotes ?? [],
-    circuits: raw.circuits ?? [],
-    loadTypes: raw.loadTypes?.length ? raw.loadTypes : createDefaultLoadTypes(),
-    electricalRuleSets: raw.electricalRuleSets?.length
-      ? raw.electricalRuleSets
+    projects: merged.projects.length > 0 ? merged.projects : defaults.projects,
+    materials: merged.materials.length > 0 ? merged.materials : exampleMaterialsFallback(),
+    suppliers: merged.suppliers ?? [],
+    quotes: merged.quotes ?? [],
+    circuits: merged.circuits ?? [],
+    loadTypes: merged.loadTypes?.length ? merged.loadTypes : createDefaultLoadTypes(),
+    electricalRuleSets: merged.electricalRuleSets?.length
+      ? merged.electricalRuleSets
       : createDefaultElectricalRuleSets(),
-    companySettings: { ...defaults.companySettings, ...raw.companySettings },
-    quoteNumberState: raw.quoteNumberState ?? defaults.quoteNumberState,
+    companySettings: { ...defaults.companySettings, ...merged.companySettings },
+    quoteNumberState: merged.quoteNumberState ?? defaults.quoteNumberState,
     activeProjectId:
-      raw.activeProjectId &&
-      raw.projects.some((p) => p.id === raw.activeProjectId)
-        ? raw.activeProjectId
-        : raw.projects[0]?.id,
+      merged.activeProjectId &&
+      merged.projects.some((p) => p.id === merged.activeProjectId)
+        ? merged.activeProjectId
+        : merged.projects[0]?.id,
   }
+}
+
+function exampleMaterialsFallback(): Material[] {
+  return createDefaultProtectionMaterials(nowIso())
 }
 
 function migrateLegacyProject(): AppData {
