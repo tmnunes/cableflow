@@ -11,6 +11,7 @@ import { createId } from '@/utils/cn'
 import {
   createDefaultElectricalRuleSets,
   createDefaultLoadTypes,
+  createDefaultProtectionMaterials,
 } from '@/data/electrical'
 
 function nowIso(): string {
@@ -50,7 +51,7 @@ export function createDefaultAppData(): AppData {
   return {
     version: DATA_VERSION,
     projects: [sample],
-    materials: [],
+    materials: createDefaultProtectionMaterials(timestamp),
     suppliers: [],
     quotes: [],
     circuits: [],

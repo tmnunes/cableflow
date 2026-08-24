@@ -188,12 +188,12 @@ describe('calculateCircuitDesign', () => {
     expect(result.installedPower).toBe(45)
     expect(result.designPower).toBe(45)
     expect(result.designCurrent).toBeCloseTo(45 / (230 * 1), 2)
-    expect(result.protection?.option?.rating).toBe(6)
+    expect(result.protection?.option?.rating).toBe(10)
     expect(result.conductor?.recommendationBasis).toBe('ruleDefault')
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.0')
+    expect(result.ruleSetVersion).toBe('1.1')
   })
 
   it('flags voltage drop above the configured limit', () => {

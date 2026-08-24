@@ -1,35 +1,138 @@
 import type { ElectricalRuleSet, ProtectionOption } from '@/types/electrical'
+import { EXAMPLE_PROTECTION_MATERIAL_IDS } from '@/data/electrical/exampleProtectionMaterials'
+
+const M = EXAMPLE_PROTECTION_MATERIAL_IDS
 
 const EXAMPLE_PROTECTIONS: ProtectionOption[] = [
-  { id: 'example-mcb-6', type: 'MCB', rating: 6, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-10', type: 'MCB', rating: 10, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-13', type: 'MCB', rating: 13, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-16', type: 'MCB', rating: 16, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-20', type: 'MCB', rating: 20, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-25', type: 'MCB', rating: 25, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-32', type: 'MCB', rating: 32, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-40', type: 'MCB', rating: 40, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-50', type: 'MCB', rating: 50, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-mcb-63', type: 'MCB', rating: 63, poles: 2, curve: 'C', enabled: true },
-  { id: 'example-rcd-40-30', type: 'RCD', rating: 40, poles: 2, enabled: true },
-  { id: 'example-spd-t2', type: 'SPD', rating: 0, poles: 2, enabled: true },
+  // Fila 1 — MCB 1P EFAPEL Série 55, 6 kA
+  {
+    id: 'example-mcb-1p-c10',
+    type: 'MCB',
+    rating: 10,
+    poles: 1,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55110_1p_c10,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-1p-c16',
+    type: 'MCB',
+    rating: 16,
+    poles: 1,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55116_1p_c16,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-1p-c20',
+    type: 'MCB',
+    rating: 20,
+    poles: 1,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55120_1p_c20,
+    enabled: true,
+  },
+  // Fila 2 — MCB 3P
+  {
+    id: 'example-mcb-3p-c20',
+    type: 'MCB',
+    rating: 20,
+    poles: 3,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55120_3p_c20,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-3p-c25',
+    type: 'MCB',
+    rating: 25,
+    poles: 3,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55125_3p_c25,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-3p-c32',
+    type: 'MCB',
+    rating: 32,
+    poles: 3,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55132_3p_c32,
+    enabled: true,
+  },
+  // Fila 4 — MCB 2P / 1P+N
+  {
+    id: 'example-mcb-2p-c16',
+    type: 'MCB',
+    rating: 16,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55116_2p_c16,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-2p-c20',
+    type: 'MCB',
+    rating: 20,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55120_2p_c20,
+    enabled: true,
+  },
+  // Filas 3–4 — RCD 4P EFAPEL
+  {
+    id: 'example-rcd-4p-40-30',
+    type: 'RCD',
+    rating: 40,
+    poles: 4,
+    materialId: M.rcd55640_4p_40a_30ma,
+    enabled: true,
+  },
+  {
+    id: 'example-rcd-4p-25-30',
+    type: 'RCD',
+    rating: 25,
+    poles: 4,
+    materialId: M.rcd55625_4p_25a_30ma,
+    enabled: true,
+  },
+  {
+    id: 'example-rcd-4p-25-300',
+    type: 'RCD',
+    rating: 25,
+    poles: 4,
+    materialId: M.rcd55625_4p_25a_300ma,
+    enabled: true,
+  },
 ]
+
+const MCB_1P_IDS = ['example-mcb-1p-c10', 'example-mcb-1p-c16', 'example-mcb-1p-c20'] as const
+const MCB_2P_IDS = ['example-mcb-2p-c16', 'example-mcb-2p-c20'] as const
+const MCB_3P_IDS = ['example-mcb-3p-c20', 'example-mcb-3p-c25', 'example-mcb-3p-c32'] as const
 
 /**
  * Example / Default electrical rule set.
- * Contains configurable placeholders only. Ampacity tables are intentionally empty
- * so the engine will not invent current-carrying capacity.
+ * Protection options reference the Example / Default EFAPEL materials catalog.
+ * Ampacity tables are intentionally empty so the engine will not invent Iz.
  */
 export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
   id: 'example-default-v1',
   name: 'Example / Default',
-  version: '1.0',
+  version: '1.1',
   voltage: 230,
   frequency: 50,
   active: true,
   isExample: true,
   notes:
-    'Example / Default rule set. Review and replace these values with a verified rule set before relying on recommendations.',
+    'Example / Default rule set aligned with an EFAPEL Série 55 reference panel. Review and replace these values with a verified rule set before relying on recommendations.',
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   defaults: {
@@ -55,25 +158,25 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'lighting',
       defaultConductorSection: 1.5,
       allowedConductorSections: [1.5, 2.5],
-      protectionOptionIds: ['example-mcb-6', 'example-mcb-10', 'example-mcb-16'],
+      protectionOptionIds: ['example-mcb-1p-c10', 'example-mcb-1p-c16'],
       calculationMethod: 'sumLoads',
-      notes: 'Example / Default lighting placeholders.',
+      notes: 'Example / Default — MCB 1P C10/C16 (EFAPEL 55110/55116).',
     },
     {
       id: 'example-rule-socket',
       circuitCategory: 'socket',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20'],
       calculationMethod: 'sumLoads',
-      notes: 'Example / Default socket placeholders. Not a legal socket-count rule.',
+      notes: 'Example / Default — MCB 1P C16/C20. Not a legal socket-count rule.',
     },
     {
       id: 'example-rule-kitchen',
       circuitCategory: 'kitchen',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20', 'example-mcb-25', 'example-mcb-32'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
       calculationMethod: 'sumLoads',
       notes: 'Example / Default kitchen placeholders.',
     },
@@ -82,7 +185,7 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'appliance',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20', 'example-mcb-25'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
       calculationMethod: 'sumLoads',
     },
     {
@@ -90,7 +193,7 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'hvac',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20', 'example-mcb-25', 'example-mcb-32'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20', 'example-mcb-3p-c25'],
       calculationMethod: 'sumLoads',
     },
     {
@@ -98,7 +201,7 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'waterHeating',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20', 'example-mcb-25'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
       calculationMethod: 'sumLoads',
     },
     {
@@ -106,7 +209,7 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'motor',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6, 10],
-      protectionOptionIds: ['example-mcb-16', 'example-mcb-20', 'example-mcb-25', 'example-mcb-32'],
+      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-3p-c20', 'example-mcb-3p-c25'],
       calculationMethod: 'sumLoads',
     },
     {
@@ -114,21 +217,15 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'power',
       defaultConductorSection: 4,
       allowedConductorSections: [4, 6, 10, 16],
-      protectionOptionIds: [
-        'example-mcb-20',
-        'example-mcb-25',
-        'example-mcb-32',
-        'example-mcb-40',
-        'example-mcb-50',
-        'example-mcb-63',
-      ],
+      protectionOptionIds: [...MCB_2P_IDS, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
+      notes: 'Example / Default — cargas dedicadas / EV (ex.: MCB 2P C20 pos. 15).',
     },
     {
       id: 'example-rule-other',
       circuitCategory: 'other',
       allowedConductorSections: [1.5, 2.5, 4, 6, 10, 16],
-      protectionOptionIds: EXAMPLE_PROTECTIONS.filter((p) => p.type === 'MCB').map((p) => p.id),
+      protectionOptionIds: [...MCB_1P_IDS, ...MCB_2P_IDS],
       calculationMethod: 'sumLoads',
     },
   ],
@@ -141,7 +238,16 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       notes: 'Ampacity table intentionally empty. Configure verified current-carrying capacity before validating conductors.',
     },
   ],
-  additionalProtectionRules: [],
+  additionalProtectionRules: [
+    {
+      id: 'example-add-rcd-40-30',
+      type: 'RCD',
+      appliesTo: 'socket',
+      required: false,
+      reason: 'Example / Default — RCD 4P 40 A 30 mA (55640 4BC) when required by the installation design.',
+      reference: { notes: 'Configure requirement in a verified rule set.' },
+    },
+  ],
   simultaneityRules: [
     {
       id: 'example-simultaneity-circuit',
@@ -150,5 +256,11 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       notes: 'Example / Default. Configure verified demand factors before using panel totals.',
     },
   ],
-  references: [],
+  references: [
+    {
+      source: 'Example / Default panel inventory',
+      document: 'EFAPEL Série 55 / 556xx',
+      notes: 'Reference MCB and RCD models supplied by the installer. Not a legal certification.',
+    },
+  ],
 }

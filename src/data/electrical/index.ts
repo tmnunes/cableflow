@@ -24,4 +24,9 @@ export function createDefaultElectricalRuleSets(timestamp = nowIso()) {
   ]
 }
 
-export { EXAMPLE_LOAD_TYPES, EXAMPLE_ELECTRICAL_RULE_SET }
+export { EXAMPLE_LOAD_TYPES } from '@/data/electrical/exampleLoadTypes'
+export { EXAMPLE_ELECTRICAL_RULE_SET } from '@/data/electrical/exampleRuleSet'
+export {
+  createDefaultProtectionMaterials,
+  EXAMPLE_PROTECTION_MATERIAL_IDS,
+} from '@/data/electrical/exampleProtectionMaterials'
