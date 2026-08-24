@@ -1,5 +1,6 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
+  Bolt,
   Cable,
   FileText,
   LayoutDashboard,
@@ -7,6 +8,8 @@ import {
   Settings,
   Truck,
   FolderKanban,
+  BookOpen,
+  Scale,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAppData } from '@/hooks/useAppData'
@@ -16,9 +19,12 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'nav.dashboard' as const },
   { to: '/projects', icon: FolderKanban, labelKey: 'nav.projects' as const },
   { to: '/cables', icon: Cable, labelKey: 'nav.cables' as const, dynamic: true },
+  { to: '/circuits', icon: Bolt, labelKey: 'nav.circuits' as const, dynamic: true },
   { to: '/materials', icon: Package, labelKey: 'nav.materials' as const },
+  { to: '/load-types', icon: BookOpen, labelKey: 'nav.loadTypes' as const },
   { to: '/suppliers', icon: Truck, labelKey: 'nav.suppliers' as const },
   { to: '/quotes', icon: FileText, labelKey: 'nav.quotes' as const },
+  { to: '/electrical-rules', icon: Scale, labelKey: 'nav.electricalRules' as const },
   { to: '/settings', icon: Settings, labelKey: 'nav.settings' as const },
 ]
 
@@ -30,9 +36,13 @@ interface SidebarProps {
 export function Sidebar({ onNavigate, className }: SidebarProps) {
   const { t } = useTranslation()
   const { activeProject } = useAppData()
+  const location = useLocation()
 
   const cablesPath = activeProject
-    ? `/projects/${activeProject.id}/cables`
+    ? `/projects/${activeProject.id}/cables?tab=cables`
+    : '/projects'
+  const circuitsPath = activeProject
+    ? `/projects/${activeProject.id}/cables?tab=circuits`
     : '/projects'
 
   return (
@@ -45,16 +55,26 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
       </div>
 
       {navItems.map(({ to, icon: Icon, labelKey, dynamic }) => {
-        const path = dynamic ? cablesPath : to
+        const path = to === '/circuits' ? circuitsPath : dynamic ? cablesPath : to
+        const tab = new URLSearchParams(location.search).get('tab')
+        const onProjectWorkspace = /\/projects\/[^/]+\/cables\/?$/.test(location.pathname)
+        const active =
+          to === '/circuits'
+            ? onProjectWorkspace && (tab === 'circuits' || tab === 'panel')
+            : to === '/cables'
+              ? onProjectWorkspace && tab === 'cables'
+              : to === '/projects'
+                ? location.pathname === '/projects'
+                : location.pathname === to || location.pathname.startsWith(`${to}/`)
         return (
           <NavLink
             key={to}
             to={path}
             onClick={onNavigate}
-            className={({ isActive }) =>
+            className={() =>
               cn(
                 'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive
+                active
                   ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
               )

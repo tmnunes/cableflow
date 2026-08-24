@@ -35,7 +35,7 @@ export function AppHeader({
   const nameMissing = !projectName.trim()
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/80 bg-background/90 backdrop-blur-md print:static print:border-b print:bg-white print:backdrop-blur-none">
+    <header className="border-b border-border/80 bg-background print:border-b print:bg-white">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-3 px-4 py-3 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm print:shadow-none">

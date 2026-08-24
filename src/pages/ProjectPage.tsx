@@ -1,6 +1,9 @@
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { Cable, FileText, Package, Printer } from 'lucide-react'
+import { useEffect } from 'react'
+import { Cable, CircuitBoard, FileText, Package, PanelTop, Printer } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { CircuitsPanel } from '@/components/circuits/CircuitsPanel'
+import { PanelBoard } from '@/components/circuits/PanelBoard'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { CableRunsTable } from '@/components/project/CableRunsTable'
 import { ProjectMaterialsTable } from '@/components/project/ProjectMaterialsTable'
@@ -10,11 +13,17 @@ import { Button } from '@/components/ui/button'
 import { useAppData } from '@/hooks/useAppData'
 import { useProject } from '@/hooks/useProject'
 
-type Tab = 'cables' | 'materials'
+type Tab = 'cables' | 'materials' | 'circuits' | 'panel'
 
 export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { projects, locale } = useAppData()
+  const { projects, locale, setActiveProjectId } = useAppData()
+
+  useEffect(() => {
+    if (projectId && projects.some((project) => project.id === projectId)) {
+      setActiveProjectId(projectId)
+    }
+  }, [projectId, projects, setActiveProjectId])
 
   if (!projectId || !projects.some((p) => p.id === projectId)) {
     return <Navigate to="/projects" replace />
@@ -33,7 +42,10 @@ function ProjectView({
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
   const requestedTab = searchParams.get('tab')
-  const activeTab: Tab = requestedTab === 'cables' ? 'cables' : 'materials'
+  const activeTab: Tab =
+    requestedTab === 'cables' || requestedTab === 'circuits' || requestedTab === 'panel'
+      ? requestedTab
+      : 'materials'
 
   const {
     project,
@@ -62,7 +74,7 @@ function ProjectView({
     duplicateMaterial,
   } = useProject(projectId)
 
-  const { materials: catalogMaterials, suppliers } = useAppData()
+  const { materials: catalogMaterials, suppliers, circuits } = useAppData()
 
   const setActiveTab = (tab: Tab) => {
     const next = new URLSearchParams(searchParams)
@@ -130,6 +142,33 @@ function ProjectView({
             {project.items.length}
           </span>
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('circuits')}
+          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'circuits'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <CircuitBoard className="h-4 w-4" />
+          {t('projects.tabs.circuits')}
+          <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-xs tabular-nums">
+            {circuits.filter((circuit) => circuit.projectId === projectId).length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('panel')}
+          className={`flex items-center gap-1.5 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+            activeTab === 'panel'
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <PanelTop className="h-4 w-4" />
+          {t('projects.tabs.panel')}
+        </button>
       </div>
 
       {activeTab === 'cables' && (
@@ -166,6 +205,9 @@ function ProjectView({
           suppliers={suppliers}
         />
       )}
+
+      {activeTab === 'circuits' && <CircuitsPanel projectId={projectId} />}
+      {activeTab === 'panel' && <PanelBoard projectId={projectId} />}
     </div>
   )
 }

@@ -25,6 +25,8 @@ export function ProjectsPage() {
     duplicateProject,
     importProjectRecords,
     importQuotes,
+    importCircuits,
+    circuits,
     setActiveProjectId,
   } = useAppData()
   const [search, setSearch] = useState('')
@@ -44,7 +46,7 @@ export function ProjectsPage() {
   }
 
   const handleProjectsQuotesExport = () => {
-    downloadJson('cableflow-projects-quotes.json', toProjectsQuotesTransfer(projects, quotes))
+    downloadJson('cableflow-projects-quotes.json', toProjectsQuotesTransfer(projects, quotes, circuits))
     toast.success(t('projects.projectsQuotesExported'))
   }
 
@@ -58,6 +60,7 @@ export function ProjectsPage() {
     }
     importProjectRecords(result.data.projects)
     importQuotes(result.data.quotes)
+    importCircuits(result.data.circuits)
     const firstProject = result.data.projects[0]
     if (firstProject) {
       setActiveProjectId(firstProject.id)

@@ -122,6 +122,14 @@ export function QuoteItemsTable({
                         <span className="mt-1 block text-[10px] text-primary">
                           {t('quotes.items.fromCableflow')}
                         </span>
+                      ) : item.source?.source === 'circuit' ? (
+                        <span className="mt-1 block text-[10px] text-primary">
+                          {t('quotes.items.fromCircuit')}
+                        </span>
+                      ) : item.source?.source === 'protection' ? (
+                        <span className="mt-1 block text-[10px] text-primary">
+                          {t('quotes.items.fromProtection')}
+                        </span>
                       ) : null}
                     </td>
                     <td className="px-3 py-2">

@@ -13,12 +13,17 @@ import type { Supplier } from '@/types/supplier'
 import type { CompanySettings, QuoteNumberState } from '@/types/company'
 import { defaultCompanySettings } from '@/types/company'
 import type { Quote } from '@/types/quote'
+import type { Circuit, ElectricalRuleSet, LoadType } from '@/types/electrical'
 import { PROJECT_VERSION } from '@/services/storage/keys'
 import { isCircuitType } from '@/utils/validation'
 import { createId } from '@/utils/cn'
 import { countConductors, parseConduitValue, parseSpec } from '@/utils/parser'
 import { normalizeQuote } from '@/utils/quotes'
 import type { CableRun } from '@/types/cable'
+import {
+  createDefaultElectricalRuleSets,
+  createDefaultLoadTypes,
+} from '@/data/electrical'
 
 export type EntityImportResult<T> =
   | { ok: true; data: T }
@@ -28,15 +33,21 @@ type ProjectImportResult =
   | { ok: true; project: { projectName: string; version: number; items: CableRun[]; materials: ProjectMaterialItem[] } }
   | { ok: false; error: string }
 
+function isSupportedVersion(value: unknown): boolean {
+  return value === DATA_VERSION || value === 2
+}
+
 export function toProjectsQuotesTransfer(
   projects: ProjectRecord[],
   quotes: Quote[],
+  circuits: Circuit[] = [],
 ): ProjectsQuotesTransfer {
   return {
     schema: PROJECTS_QUOTES_SCHEMA,
     version: DATA_VERSION,
     projects,
     quotes,
+    circuits,
   }
 }
 
@@ -45,6 +56,8 @@ export function toSettingsMaterialsSuppliersTransfer(
   quoteNumberState: QuoteNumberState,
   materials: Material[],
   suppliers: Supplier[],
+  loadTypes: LoadType[] = [],
+  electricalRuleSets: ElectricalRuleSet[] = [],
 ): SettingsMaterialsSuppliersTransfer {
   return {
     schema: SETTINGS_MATERIALS_SUPPLIERS_SCHEMA,
@@ -53,6 +66,8 @@ export function toSettingsMaterialsSuppliersTransfer(
     quoteNumberState,
     materials,
     suppliers,
+    loadTypes,
+    electricalRuleSets,
   }
 }
 
@@ -66,7 +81,7 @@ export function parseSettingsMaterialsSuppliersImport(
   if (obj.schema !== SETTINGS_MATERIALS_SUPPLIERS_SCHEMA) {
     return { ok: false, error: 'invalidSchema' }
   }
-  if (obj.version !== DATA_VERSION) {
+  if (!isSupportedVersion(obj.version)) {
     return { ok: false, error: 'invalidVersion' }
   }
 
@@ -117,6 +132,12 @@ export function parseSettingsMaterialsSuppliersImport(
       quoteNumberState,
       materials: obj.materials as Material[],
       suppliers: obj.suppliers as Supplier[],
+      loadTypes: Array.isArray(obj.loadTypes)
+        ? (obj.loadTypes as LoadType[])
+        : createDefaultLoadTypes(),
+      electricalRuleSets: Array.isArray(obj.electricalRuleSets)
+        ? (obj.electricalRuleSets as ElectricalRuleSet[])
+        : createDefaultElectricalRuleSets(),
     },
   }
 }
@@ -131,7 +152,7 @@ export function parseProjectsQuotesImport(
   if (obj.schema !== PROJECTS_QUOTES_SCHEMA) {
     return { ok: false, error: 'invalidSchema' }
   }
-  if (obj.version !== DATA_VERSION) {
+  if (!isSupportedVersion(obj.version)) {
     return { ok: false, error: 'invalidVersion' }
   }
   if (!Array.isArray(obj.projects)) {
@@ -162,6 +183,7 @@ export function parseProjectsQuotesImport(
       version: DATA_VERSION,
       projects,
       quotes,
+      circuits: Array.isArray(obj.circuits) ? (obj.circuits as Circuit[]) : [],
     },
   }
 }

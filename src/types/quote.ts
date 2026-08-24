@@ -4,14 +4,16 @@ import type { MaterialUnit } from '@/types/material'
 
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
-export type QuoteItemSource = 'cableflow' | 'manual'
+export type QuoteItemSource = 'cableflow' | 'manual' | 'circuit' | 'protection'
 
 export interface QuoteItemSourceMeta {
   source: QuoteItemSource
   projectId?: string
   runId?: string
+  circuitId?: string
   conductorCode?: ConductorCode
   sectionMm2?: number
+  protectionType?: string
   /** When true, quantity is the total across all project runs for this section × conductor */
   aggregated?: boolean
 }

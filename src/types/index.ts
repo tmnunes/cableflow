@@ -57,8 +57,20 @@ export type {
   Quote,
   CableRequirement,
   AggregatedCableRequirement,
-  cableAggregateKey,
 } from '@/types/quote'
+export { cableAggregateKey } from '@/types/quote'
+
+export type {
+  CircuitCategory,
+  Circuit,
+  CircuitLoad,
+  LoadType,
+  ElectricalRuleSet,
+  CircuitDesignResult,
+  ProtectionOption,
+  RuleReference,
+} from '@/types/electrical'
+export { CIRCUIT_CATEGORIES } from '@/types/electrical'
 
 export type {
   AppData,
