@@ -16,7 +16,7 @@ import { SuppliersPage } from '@/pages/SuppliersPage'
 function CablesRedirect() {
   const { activeProject } = useAppData()
   if (activeProject) {
-    return <Navigate to={`/projects/${activeProject.id}/cables`} replace />
+    return <Navigate to={`/projects/${activeProject.id}/cables?tab=cables`} replace />
   }
   return <Navigate to="/projects" replace />
 }

@@ -39,7 +39,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
   const location = useLocation()
 
   const cablesPath = activeProject
-    ? `/projects/${activeProject.id}/cables`
+    ? `/projects/${activeProject.id}/cables?tab=cables`
     : '/projects'
   const circuitsPath = activeProject
     ? `/projects/${activeProject.id}/cables?tab=circuits`
@@ -62,7 +62,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
           to === '/circuits'
             ? onProjectWorkspace && (tab === 'circuits' || tab === 'panel')
             : to === '/cables'
-              ? onProjectWorkspace && tab !== 'circuits' && tab !== 'panel'
+              ? onProjectWorkspace && tab === 'cables'
               : to === '/projects'
                 ? location.pathname === '/projects'
                 : location.pathname === to || location.pathname.startsWith(`${to}/`)
@@ -71,12 +71,14 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
             key={to}
             to={path}
             onClick={onNavigate}
-            className={cn(
-              'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              active
-                ? 'bg-primary/10 text-primary'
-                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-            )}
+            className={() =>
+              cn(
+                'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                active
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+              )
+            }
           >
             <Icon className="h-4 w-4 shrink-0" />
             {t(labelKey)}

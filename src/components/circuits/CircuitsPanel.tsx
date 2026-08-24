@@ -38,7 +38,7 @@ export function CircuitsPanel({ projectId }: CircuitsPanelProps) {
           <h2 className="text-lg font-semibold">{t('electricalCircuits.title')}</h2>
           <p className="text-sm text-muted-foreground">{t('electricalCircuits.subtitle')}</p>
         </div>
-        <Button type="button" onClick={addCircuit}>
+        <Button type="button" data-testid="add-circuit" onClick={addCircuit}>
           <Plus />
           {t('electricalCircuits.add')}
         </Button>
@@ -47,7 +47,7 @@ export function CircuitsPanel({ projectId }: CircuitsPanelProps) {
       {projectCircuits.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border py-10 text-center">
           <p className="text-sm text-muted-foreground">{t('electricalCircuits.empty')}</p>
-          <Button type="button" className="mt-4" onClick={addCircuit}>
+          <Button type="button" className="mt-4" data-testid="add-circuit-empty" onClick={addCircuit}>
             <Plus />
             {t('electricalCircuits.add')}
           </Button>

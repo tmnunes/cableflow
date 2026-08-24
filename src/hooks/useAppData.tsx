@@ -99,7 +99,11 @@ interface AppDataContextValue {
 const AppDataContext = createContext<AppDataContextValue | null>(null)
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(() => loadAppData())
+  const [data, setData] = useState<AppData>(() => {
+    const loaded = loadAppData()
+    saveAppData(loaded)
+    return loaded
+  })
   const [theme, setThemeState] = useState<Theme>(() => loadTheme())
   const [locale, setLocaleState] = useState<Locale>(() => loadLocale())
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
