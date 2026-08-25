@@ -1,8 +1,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_SUPABASE_URL?: string
-  readonly VITE_SUPABASE_ANON_KEY?: string
+  // No Supabase secrets in the browser — cloud sync uses /api/workspace (server-only env).
 }
 
 interface ImportMeta {

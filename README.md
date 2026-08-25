@@ -71,37 +71,43 @@ To open the same space on another device: **Settings → Open another workspace*
 - Lucide icons
 - i18next
 - Vitest
-- Supabase (optional: Postgres + Edge Function)
+- Supabase (optional: Postgres via server-side API route)
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # optional — enables cloud sync
+cp .env.example .env.local   # optional — server env enables cloud sync
 npm run dev
 ```
 
 Open the URL Vite prints (usually `http://localhost:5173`).
 
-Without `VITE_SUPABASE_*` the app runs fully offline (LocalStorage only).
+Without server env vars the app runs fully offline (LocalStorage only). **No Supabase keys are shipped to the browser.**
 
-### Cloud sync setup (Supabase)
+### Cloud sync setup (Supabase + Vercel API)
+
+Cloud sync uses a **server-side** route (`/api/workspace`) so the Supabase **service role key never reaches the client**. The browser only talks to your own origin.
 
 1. Run migration `supabase/migrations/20260825220000_cableflow_workspaces.sql` (SQL editor or `supabase db push`).
-2. Deploy the function:
+2. Set **server-only** env (Vercel project settings and/or `.env.local` for `npm run dev`):
 
 ```bash
-supabase functions deploy cableflow-workspace --project-ref jberponwqclwpipovgrf
+SUPABASE_URL=https://jberponwqclwpipovgrf.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=<service role key — never commit>
 ```
 
-3. Env (local / Vercel):
+Optional hardening:
 
 ```bash
-VITE_SUPABASE_URL=https://jberponwqclwpipovgrf.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon key>
+ALLOWED_ORIGINS=https://cableflow-ruby.vercel.app,http://localhost:5173
 ```
 
-`verify_jwt = false` for this function — access is gated by the secret workspace UUID (no Auth users).
+3. Deploy to Vercel (the `api/workspace.ts` function is deployed automatically). Local dev serves the same route via a Vite middleware plugin.
+
+The legacy Supabase Edge Function (`supabase/functions/cableflow-workspace`) is no longer called from the browser. You do not need `VITE_SUPABASE_*` variables.
+
+Access is still gated by the secret workspace UUID (no Auth users).
 
 ### Production build
 

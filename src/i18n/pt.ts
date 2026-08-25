@@ -619,7 +619,8 @@ export const pt: TranslationSchema = {
       description:
         'Os seus dados sincronizam automaticamente para um espaço privado identificado por um UUID secreto. Quem tiver este código acede aos seus projetos — guarde-o em privado. A app continua a funcionar offline com armazenamento local.',
       notConfigured:
-        'A sincronização cloud não está configurada. Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para activar.',
+        'A sincronização cloud não está configurada no servidor. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY na Vercel (ou .env.local em desenvolvimento).',
+      checking: 'A verificar sincronização cloud…',
       enableSync: 'Activar sincronização automática na cloud',
       yourCode: 'O seu código secreto do espaço',
       reveal: 'Mostrar',
@@ -654,6 +655,7 @@ export const pt: TranslationSchema = {
         not_found: 'Não existe espaço para este código.',
         already_exists: 'O espaço já existe.',
         server: 'Erro do servidor ao sincronizar.',
+        rate_limited: 'Demasiados pedidos — tente novamente dentro de um minuto.',
       },
     },
     companyTitle: 'Dados da empresa',

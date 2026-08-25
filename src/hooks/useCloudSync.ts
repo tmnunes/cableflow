@@ -7,6 +7,7 @@ import {
   createWorkspaceCode,
   isCloudConfigured,
   isValidWorkspaceCode,
+  probeCloudConfigured,
   type CloudSyncError,
 } from '@/services/cloud/workspaceApi'
 import {
@@ -33,11 +34,11 @@ interface UseCloudSyncOptions {
 }
 
 export function useCloudSync({ data, replaceAppData }: UseCloudSyncOptions) {
+  const [configured, setConfigured] = useState(false)
+  const [configReady, setConfigReady] = useState(false)
   const [code, setCode] = useState<string | null>(() => loadWorkspaceCode())
   const [syncEnabled, setSyncEnabledState] = useState(() => loadWorkspaceSyncEnabled())
-  const [status, setStatus] = useState<CloudSyncStatus>(() =>
-    isCloudConfigured() ? (loadWorkspaceSyncEnabled() ? 'idle' : 'disabled') : 'disabled',
-  )
+  const [status, setStatus] = useState<CloudSyncStatus>('disabled')
   const [lastError, setLastError] = useState<CloudSyncError | null>(null)
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(
     () => loadWorkspaceMeta()?.lastSyncedAt ?? null,
@@ -49,7 +50,18 @@ export function useCloudSync({ data, replaceAppData }: UseCloudSyncOptions) {
   const dataRef = useRef(data)
   dataRef.current = data
 
-  const configured = isCloudConfigured()
+  useEffect(() => {
+    let cancelled = false
+    void probeCloudConfigured().then((ok) => {
+      if (cancelled) return
+      setConfigured(ok)
+      setConfigReady(true)
+      setStatus(ok && loadWorkspaceSyncEnabled() ? 'idle' : 'disabled')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const setSyncEnabled = useCallback((enabled: boolean) => {
     saveWorkspaceSyncEnabled(enabled)
@@ -235,6 +247,7 @@ export function useCloudSync({ data, replaceAppData }: UseCloudSyncOptions) {
 
   return {
     configured,
+    configReady,
     code,
     syncEnabled,
     setSyncEnabled,

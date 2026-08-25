@@ -621,7 +621,8 @@ export const en = {
       description:
         'Your data syncs automatically to a private cloud space identified by a secret UUID. Anyone with this code can access your projects — keep it private. The app still works offline with local storage.',
       notConfigured:
-        'Cloud sync is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable it.',
+        'Cloud sync is not configured on the server. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel (or .env.local for local dev).',
+      checking: 'Checking cloud sync…',
       enableSync: 'Enable automatic cloud sync',
       yourCode: 'Your secret workspace code',
       reveal: 'Reveal',
@@ -656,6 +657,7 @@ export const en = {
         not_found: 'No workspace found for this code.',
         already_exists: 'Workspace already exists.',
         server: 'Server error while syncing.',
+        rate_limited: 'Too many requests — try again in a minute.',
       },
     },
     companyTitle: 'Company profile',

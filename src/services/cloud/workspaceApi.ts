@@ -3,6 +3,10 @@ import type { AppData } from '@/types/app'
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+const API_PATH = '/api/workspace'
+
+let cloudConfiguredCache: boolean | null = null
+
 export function isValidWorkspaceCode(code: string): boolean {
   return UUID_RE.test(code.trim())
 }
@@ -19,18 +23,31 @@ export function createWorkspaceCode(): string {
   })
 }
 
-export function getSupabaseUrl(): string | null {
-  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
-  return url?.trim() ? url.replace(/\/$/, '') : null
+/** Probes same-origin API — no Supabase keys in the browser. */
+export async function probeCloudConfigured(): Promise<boolean> {
+  if (cloudConfiguredCache !== null) return cloudConfiguredCache
+  try {
+    const res = await fetch(`${API_PATH}?action=health`, { method: 'GET' })
+    if (!res.ok) {
+      cloudConfiguredCache = false
+      return false
+    }
+    const json = (await res.json()) as { configured?: boolean; ok?: boolean }
+    cloudConfiguredCache = Boolean(json.ok && json.configured)
+    return cloudConfiguredCache
+  } catch {
+    cloudConfiguredCache = false
+    return false
+  }
 }
 
-export function getSupabaseAnonKey(): string | null {
-  const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
-  return key?.trim() ? key : null
-}
-
+/** Sync calls same-origin /api/workspace — secrets stay on the server. */
 export function isCloudConfigured(): boolean {
-  return Boolean(getSupabaseUrl() && getSupabaseAnonKey())
+  return cloudConfiguredCache === true
+}
+
+export function resetCloudConfiguredCache(): void {
+  cloudConfiguredCache = null
 }
 
 export type CloudSyncError =
@@ -40,6 +57,7 @@ export type CloudSyncError =
   | 'not_found'
   | 'already_exists'
   | 'server'
+  | 'rate_limited'
 
 export type CloudResult<T> =
   | { ok: true; data: T }
@@ -53,23 +71,26 @@ interface WorkspaceResponse {
   error?: string
 }
 
+function mapHttpError(status: number, json: WorkspaceResponse): CloudSyncError {
+  if (status === 503 || json.error === 'not_configured') return 'not_configured'
+  if (status === 404 || json.error === 'not_found') return 'not_found'
+  if (status === 409 || json.error === 'already_exists') return 'already_exists'
+  if (status === 400 && json.error === 'invalid_code') return 'invalid_code'
+  if (status === 429 || json.error === 'rate_limited') return 'rate_limited'
+  return 'server'
+}
+
 async function callWorkspace(
   body: Record<string, unknown>,
 ): Promise<CloudResult<WorkspaceResponse>> {
-  const base = getSupabaseUrl()
-  const anon = getSupabaseAnonKey()
-  if (!base || !anon) {
+  if (!isCloudConfigured()) {
     return { ok: false, error: 'not_configured' }
   }
 
   try {
-    const res = await fetch(`${base}/functions/v1/cableflow-workspace`, {
+    const res = await fetch(API_PATH, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${anon}`,
-        apikey: anon,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
 
@@ -80,17 +101,8 @@ async function callWorkspace(
       // ignore
     }
 
-    if (res.status === 404 || json.error === 'not_found') {
-      return { ok: false, error: 'not_found' }
-    }
-    if (res.status === 409 || json.error === 'already_exists') {
-      return { ok: false, error: 'already_exists' }
-    }
-    if (res.status === 400 && json.error === 'invalid_code') {
-      return { ok: false, error: 'invalid_code' }
-    }
     if (!res.ok) {
-      return { ok: false, error: 'server' }
+      return { ok: false, error: mapHttpError(res.status, json) }
     }
 
     return { ok: true, data: json }

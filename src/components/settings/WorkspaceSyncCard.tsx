@@ -13,6 +13,7 @@ export function WorkspaceSyncCard() {
   const { t } = useTranslation()
   const {
     configured,
+    configReady,
     code,
     syncEnabled,
     setSyncEnabled,
@@ -28,6 +29,22 @@ export function WorkspaceSyncCard() {
   const [copied, setCopied] = useState(false)
   const [enterCode, setEnterCode] = useState('')
   const [entering, setEntering] = useState(false)
+
+  if (!configReady) {
+    return (
+      <Card className="border-border/70">
+        <CardHeader>
+          <CardTitle className="text-base">{t('settings.workspace.title')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            {t('settings.workspace.checking')}
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (!configured) {
     return (
