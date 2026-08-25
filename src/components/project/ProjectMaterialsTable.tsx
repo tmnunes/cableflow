@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { MaterialCombobox } from '@/components/project/MaterialCombobox'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AutoResizeTextarea } from '@/components/ui/textarea'
 import type { ProjectMaterialItem } from '@/types/cable'
 import type { Material } from '@/types/material'
 import type { Supplier } from '@/types/supplier'
@@ -160,14 +161,15 @@ export function ProjectMaterialsTable({
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-2 py-2">
-                      <Input
+                    <td className="min-w-0 px-2 py-2">
+                      <AutoResizeTextarea
                         value={item.description}
                         onChange={(e) => onUpdate(item.id, { description: e.target.value })}
-                        className="h-9 text-sm"
+                        className="text-sm"
                         placeholder={t('projectMaterials.description')}
                         readOnly={isCableAuto}
-                        title={item.description}
+                        rows={1}
+                        minRows={1}
                       />
                     </td>
                     <td className="px-2 py-2">

@@ -6,6 +6,7 @@ import { SortableTh } from '@/components/common/SortableTh'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { AutoResizeTextarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -119,10 +120,12 @@ export function LoadTypesPage() {
               ) : (
                 filtered.map((loadType) => (
                   <tr key={loadType.id} className={cn('border-b border-border/70 align-top', !loadType.active && 'opacity-60')}>
-                    <td className="px-3 py-2">
-                      <Input
+                    <td className="min-w-0 px-3 py-2">
+                      <AutoResizeTextarea
                         value={loadType.name}
                         onChange={(e) => upsertLoadType({ ...loadType, name: e.target.value, updatedAt: new Date().toISOString() })}
+                        rows={1}
+                        minRows={1}
                       />
                       {loadType.isExample ? <Badge variant="outline" className="mt-1">{t('loadTypes.example')}</Badge> : null}
                     </td>

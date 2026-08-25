@@ -45,6 +45,7 @@ export const en = {
     empty: 'No cable runs yet. Add a run to start calculating.',
     emptySearch: 'No runs match your search.',
     sectionUnit: 'mm²',
+    totals: 'Estimate totals',
   },
   circuits: {
     I: 'Lighting (I)',

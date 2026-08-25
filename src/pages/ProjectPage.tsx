@@ -187,6 +187,8 @@ function ProjectView({
               onDelete={deleteRun}
               onDuplicate={duplicateRun}
               totalCount={project.items.length}
+              totals={summary.totals}
+              locale={locale}
             />
             <SummaryPanel summary={summary} locale={locale} />
           </div>

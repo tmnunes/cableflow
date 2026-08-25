@@ -7,6 +7,7 @@ import { SortableTh } from '@/components/common/SortableTh'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { AutoResizeTextarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -261,10 +262,12 @@ function MaterialRow({
         !material.active && 'opacity-60',
       )}
     >
-      <td className="px-3 py-2">
-        <Input
+      <td className="min-w-0 px-3 py-2">
+        <AutoResizeTextarea
           value={material.name}
           onChange={(e) => patch({ name: e.target.value })}
+          rows={1}
+          minRows={1}
         />
       </td>
       <td className="px-3 py-2">

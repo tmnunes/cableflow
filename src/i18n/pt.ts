@@ -43,6 +43,7 @@ export const pt: TranslationSchema = {
     empty: 'Ainda sem trajetos. Adicione um trajeto para começar a calcular.',
     emptySearch: 'Nenhum trajeto corresponde à pesquisa.',
     sectionUnit: 'mm²',
+    totals: 'Totais estimados',
   },
   circuits: {
     I: 'Iluminação (I)',
