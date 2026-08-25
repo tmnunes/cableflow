@@ -23,9 +23,9 @@ export function createWorkspaceCode(): string {
   })
 }
 
-/** Probes same-origin API — no Supabase keys in the browser. */
-export async function probeCloudConfigured(): Promise<boolean> {
-  if (cloudConfiguredCache !== null) return cloudConfiguredCache
+/** Probes same-origin API — no Supabase keys in the browser. Never caches failures. */
+export async function probeCloudConfigured(force = false): Promise<boolean> {
+  if (!force && cloudConfiguredCache === true) return true
   try {
     const res = await fetch(`${API_PATH}?action=health`, { method: 'GET' })
     if (!res.ok) {
@@ -33,8 +33,9 @@ export async function probeCloudConfigured(): Promise<boolean> {
       return false
     }
     const json = (await res.json()) as { configured?: boolean; ok?: boolean }
-    cloudConfiguredCache = Boolean(json.ok && json.configured)
-    return cloudConfiguredCache
+    const ok = Boolean(json.ok && json.configured)
+    cloudConfiguredCache = ok
+    return ok
   } catch {
     cloudConfiguredCache = false
     return false

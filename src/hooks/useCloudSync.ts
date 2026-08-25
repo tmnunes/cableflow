@@ -8,6 +8,7 @@ import {
   isCloudConfigured,
   isValidWorkspaceCode,
   probeCloudConfigured,
+  resetCloudConfiguredCache,
   type CloudSyncError,
 } from '@/services/cloud/workspaceApi'
 import {
@@ -52,16 +53,29 @@ export function useCloudSync({ data, replaceAppData }: UseCloudSyncOptions) {
 
   useEffect(() => {
     let cancelled = false
-    void probeCloudConfigured().then((ok) => {
-      if (cancelled) return
-      setConfigured(ok)
-      setConfigReady(true)
-      setStatus(ok && loadWorkspaceSyncEnabled() ? 'idle' : 'disabled')
-    })
+    const runProbe = () =>
+      probeCloudConfigured().then((ok) => {
+        if (cancelled) return
+        setConfigured(ok)
+        setConfigReady(true)
+        setStatus(ok && loadWorkspaceSyncEnabled() ? 'idle' : 'disabled')
+      })
+    void runProbe()
     return () => {
       cancelled = true
     }
   }, [])
+
+  const retryConfigProbe = useCallback(async () => {
+    setConfigReady(false)
+    resetCloudConfiguredCache()
+    const ok = await probeCloudConfigured(true)
+    setConfigured(ok)
+    setConfigReady(true)
+    setStatus(ok && syncEnabled ? 'idle' : 'disabled')
+    if (ok) bootstrapped.current = false
+    return ok
+  }, [syncEnabled])
 
   const setSyncEnabled = useCallback((enabled: boolean) => {
     saveWorkspaceSyncEnabled(enabled)
@@ -256,6 +270,7 @@ export function useCloudSync({ data, replaceAppData }: UseCloudSyncOptions) {
     lastSyncedAt,
     enterWithCode,
     disconnectWorkspace,
+    retryConfigProbe,
     retrySync,
   }
 }

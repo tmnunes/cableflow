@@ -9,7 +9,7 @@ import {
   isAllowedOrigin,
   isRateLimited,
   parseWorkspaceBody,
-} from './server/workspaceSync.ts'
+} from './api/_lib/workspaceSync.ts'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 

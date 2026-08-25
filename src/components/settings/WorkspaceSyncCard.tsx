@@ -22,6 +22,7 @@ export function WorkspaceSyncCard() {
     lastSyncedAt,
     enterWithCode,
     disconnectWorkspace,
+    retryConfigProbe,
     retrySync,
   } = useCloudSyncContext()
 
@@ -52,8 +53,12 @@ export function WorkspaceSyncCard() {
         <CardHeader>
           <CardTitle className="text-base">{t('settings.workspace.title')}</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">{t('settings.workspace.notConfigured')}</p>
+          <Button type="button" variant="outline" size="sm" onClick={() => void retryConfigProbe()}>
+            <RefreshCw className="mr-2 size-4" />
+            {t('settings.workspace.recheck')}
+          </Button>
         </CardContent>
       </Card>
     )

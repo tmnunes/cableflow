@@ -621,6 +621,7 @@ export const pt: TranslationSchema = {
       notConfigured:
         'A sincronização cloud não está configurada no servidor. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY na Vercel (ou .env.local em desenvolvimento).',
       checking: 'A verificar sincronização cloud…',
+      recheck: 'Verificar novamente',
       enableSync: 'Activar sincronização automática na cloud',
       yourCode: 'O seu código secreto do espaço',
       reveal: 'Mostrar',

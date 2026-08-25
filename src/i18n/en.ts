@@ -623,6 +623,7 @@ export const en = {
       notConfigured:
         'Cloud sync is not configured on the server. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel (or .env.local for local dev).',
       checking: 'Checking cloud sync…',
+      recheck: 'Check again',
       enableSync: 'Enable automatic cloud sync',
       yourCode: 'Your secret workspace code',
       reveal: 'Reveal',
