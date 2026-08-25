@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { DataTransferRow } from '@/components/common/DataTransferRow'
 import { CompanySettingsForm } from '@/components/settings/CompanySettingsForm'
+import { WorkspaceSyncCard } from '@/components/settings/WorkspaceSyncCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAppData } from '@/hooks/useAppData'
 import {
@@ -64,6 +65,8 @@ export function SettingsPage() {
         <h1 className="text-2xl font-semibold tracking-tight">{t('settings.title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t('settings.subtitle')}</p>
       </div>
+
+      <WorkspaceSyncCard />
 
       <CompanySettingsForm settings={companySettings} onChange={updateCompanySettings} />
 

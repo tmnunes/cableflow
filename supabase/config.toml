@@ -1,0 +1,5 @@
+# Supabase project link (optional local CLI)
+# supabase link --project-ref jberponwqclwpipovgrf
+
+[functions.cableflow-workspace]
+verify_jwt = false

@@ -614,6 +614,48 @@ export const pt: TranslationSchema = {
     settingsMaterialsSuppliersImported: 'Definições, materiais e fornecedores importados.',
     settingsMaterialsSuppliersImportConfirm:
       'Importar definições da empresa, materiais e fornecedores deste ficheiro?',
+    workspace: {
+      title: 'Espaço na cloud',
+      description:
+        'Os seus dados sincronizam automaticamente para um espaço privado identificado por um UUID secreto. Quem tiver este código acede aos seus projetos — guarde-o em privado. A app continua a funcionar offline com armazenamento local.',
+      notConfigured:
+        'A sincronização cloud não está configurada. Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para activar.',
+      enableSync: 'Activar sincronização automática na cloud',
+      yourCode: 'O seu código secreto do espaço',
+      reveal: 'Mostrar',
+      hide: 'Ocultar',
+      copy: 'Copiar',
+      copied: 'Código copiado.',
+      copyFailed: 'Não foi possível copiar o código.',
+      codeWarning:
+        'Guarde este código num sítio seguro. Precisa dele para abrir o CableFlow noutro dispositivo. O export JSON continua recomendado como backup extra.',
+      noCodeYet: 'Ainda sem código. Active a sincronização ou aguarde a primeira sincronização automática.',
+      lastSynced: 'Última sincronização: {{date}}',
+      statusIdle: 'Pronto',
+      statusSyncing: 'A sincronizar…',
+      statusSynced: 'Sincronizado',
+      statusOffline: 'Offline',
+      statusError: 'Erro de sincronização',
+      statusDisabled: 'Sync desligada',
+      retry: 'Tentar de novo',
+      disconnect: 'Esquecer este espaço neste dispositivo',
+      disconnectConfirm:
+        'Remover o código deste browser? Os dados locais mantêm-se. Os dados na cloud continuam acessíveis com o código.',
+      disconnected: 'Espaço desligado neste dispositivo.',
+      enterTitle: 'Abrir outro espaço',
+      enterHint: 'Cole um código secreto de outro dispositivo para carregar esse espaço (substitui os dados neste browser).',
+      enterPlaceholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      enter: 'Abrir espaço',
+      entered: 'Espaço carregado.',
+      errors: {
+        not_configured: 'Sincronização cloud não configurada.',
+        network: 'Erro de rede — a trabalhar offline com dados locais.',
+        invalid_code: 'Código inválido (tem de ser um UUID).',
+        not_found: 'Não existe espaço para este código.',
+        already_exists: 'O espaço já existe.',
+        server: 'Erro do servidor ao sincronizar.',
+      },
+    },
     companyTitle: 'Dados da empresa',
     companyComingSoon: 'Os dados da empresa para orçamentos estarão disponíveis numa fase posterior.',
     company: {

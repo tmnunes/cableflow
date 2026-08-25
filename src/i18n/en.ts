@@ -616,6 +616,48 @@ export const en = {
     settingsMaterialsSuppliersImported: 'Settings, materials and suppliers imported.',
     settingsMaterialsSuppliersImportConfirm:
       'Import company settings, materials and suppliers from this file?',
+    workspace: {
+      title: 'Cloud workspace',
+      description:
+        'Your data syncs automatically to a private cloud space identified by a secret UUID. Anyone with this code can access your projects — keep it private. The app still works offline with local storage.',
+      notConfigured:
+        'Cloud sync is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable it.',
+      enableSync: 'Enable automatic cloud sync',
+      yourCode: 'Your secret workspace code',
+      reveal: 'Reveal',
+      hide: 'Hide',
+      copy: 'Copy',
+      copied: 'Code copied.',
+      copyFailed: 'Could not copy code.',
+      codeWarning:
+        'Save this code somewhere safe. You need it to open CableFlow on another device. Export JSON remains recommended as an extra backup.',
+      noCodeYet: 'No workspace code yet. Enable sync or wait for the first automatic sync.',
+      lastSynced: 'Last synced: {{date}}',
+      statusIdle: 'Ready',
+      statusSyncing: 'Syncing…',
+      statusSynced: 'Synced',
+      statusOffline: 'Offline',
+      statusError: 'Sync error',
+      statusDisabled: 'Sync off',
+      retry: 'Retry sync',
+      disconnect: 'Forget this workspace on this device',
+      disconnectConfirm:
+        'Remove the workspace code from this browser? Local data stays. Cloud data remains available with the code.',
+      disconnected: 'Workspace disconnected on this device.',
+      enterTitle: 'Open another workspace',
+      enterHint: 'Paste a secret code from another device to load that space (replaces data on this browser).',
+      enterPlaceholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+      enter: 'Open workspace',
+      entered: 'Workspace loaded.',
+      errors: {
+        not_configured: 'Cloud sync is not configured.',
+        network: 'Network error — working offline with local data.',
+        invalid_code: 'Invalid workspace code (must be a UUID).',
+        not_found: 'No workspace found for this code.',
+        already_exists: 'Workspace already exists.',
+        server: 'Server error while syncing.',
+      },
+    },
     companyTitle: 'Company profile',
     companyComingSoon: 'Company settings for quotes will be available in a later phase.',
     company: {

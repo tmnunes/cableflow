@@ -2,21 +2,23 @@
 
 https://cableflow-ruby.vercel.app/
 
-Client-side tool for electricians and electrical contractors: measure cable runs, manage a material catalog, and build professional quotes. **No backend, no login, no database, no cloud sync** — everything runs in the browser and is stored only on **your** device.
+Client-side tool for electricians and electrical contractors: measure cable runs, manage a material catalog, and build professional quotes. **No login / no email** — offline-first with LocalStorage, plus optional private cloud sync via a secret workspace UUID (Supabase).
 
 **Measure → calculate → catalog → quote → print.**
 
-## Your data is private and local
+## Privacy & sync
 
-CableFlow does **not** upload projects, materials, quotes, or settings to any server. Each browser (Chrome, Safari, phone, laptop, etc.) keeps its **own separate copy** in LocalStorage. Other users, other devices, and other browsers **cannot see your data**.
+CableFlow does **not** use accounts. Data stays on your device by default. When cloud sync is configured:
 
-There is no account linking devices. To **back up**, **move to another computer**, or **restore after clearing browser data**, you must:
+1. On first visit the app creates a **secret UUID** (your workspace code) and stores your `AppData` in Supabase.
+2. That code is shown under **Settings → Cloud workspace**. Anyone with the code can load the same data — treat it like a password.
+3. Changes sync automatically (debounced). Conflicts use **last-write-wins** (silent).
+4. Offline always works with LocalStorage; sync resumes when the network is back.
+5. JSON export/import remains available as an independent backup.
 
-1. **Settings → Export full backup** (or export individual projects/catalogs as JSON)
-2. Save the `.json` file somewhere safe (disk, cloud drive, email to yourself)
-3. On the new browser/device → **Settings → Import backup**
+Other users **cannot** see your workspace unless they know your UUID. There is no shared directory of codes.
 
-Without an export file, data lost when clearing site data or switching browsers **cannot be recovered**.
+To open the same space on another device: **Settings → Open another workspace** and paste the UUID.
 
 ## Features
 
@@ -55,8 +57,9 @@ Without an export file, data lost when clearing site data or switching browsers 
 - Dashboard with project/quote/catalog overview
 - English / Portuguese i18n
 - Light / dark mode
-- Full backup export/import (all data in one JSON file)
-- Automatic migration from legacy single-project storage (v1 → v2)
+- Optional cloud workspace sync (secret UUID via Supabase)
+- Structured JSON export/import
+- Automatic migration from legacy storage versions
 
 ## Stack
 
@@ -67,16 +70,38 @@ Without an export file, data lost when clearing site data or switching browsers 
 - shadcn/ui-style components (Radix)
 - Lucide icons
 - i18next
-- Vitest (pricing & cable import tests)
+- Vitest
+- Supabase (optional: Postgres + Edge Function)
 
 ## Getting started
 
 ```bash
 npm install
+cp .env.example .env.local   # optional — enables cloud sync
 npm run dev
 ```
 
 Open the URL Vite prints (usually `http://localhost:5173`).
+
+Without `VITE_SUPABASE_*` the app runs fully offline (LocalStorage only).
+
+### Cloud sync setup (Supabase)
+
+1. Run migration `supabase/migrations/20260825220000_cableflow_workspaces.sql` (SQL editor or `supabase db push`).
+2. Deploy the function:
+
+```bash
+supabase functions deploy cableflow-workspace --project-ref jberponwqclwpipovgrf
+```
+
+3. Env (local / Vercel):
+
+```bash
+VITE_SUPABASE_URL=https://jberponwqclwpipovgrf.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key>
+```
+
+`verify_jwt = false` for this function — access is gated by the secret workspace UUID (no Auth users).
 
 ### Production build
 
@@ -120,24 +145,25 @@ If cable lengths change later, the quote editor detects the difference and can *
 
 ## Data storage
 
-All data lives **only in your browser** on the device you are using. The hosted app (e.g. Vercel) serves the static files; it never receives or stores your projects, catalogs, or quotes.
+**Local (always):** `localStorage` on the current browser.
 
-| Key                  | Content                    |
-|----------------------|----------------------------|
-| `cableflow:appdata`  | Full app data (v2)         |
-| `cableflow:theme`    | Light / dark preference    |
-| `cableflow:locale`   | `en` or `pt`               |
+**Cloud (optional):** Supabase table `cableflow_workspaces` — one JSON blob (`AppData`) per secret UUID. Direct table access is blocked by RLS; only the `cableflow-workspace` Edge Function (service role) can read/write.
 
-**Per browser, per device.** Opening CableFlow in another browser or on another machine starts with empty data (or that browser’s own data) until you import a backup.
+| Key | Content |
+|-----|---------|
+| `cableflow:appdata` | Full app data (local cache) |
+| `cableflow:workspace-code` | Secret UUID for cloud space |
+| `cableflow:theme` | Light / dark preference |
+| `cableflow:locale` | `en` or `pt` |
 
 Legacy installs with `cableflow:project` (v1) are migrated automatically on first load.
 
-### When to export
+### When to export JSON (still recommended)
 
-- Before clearing browser data or uninstalling the browser
-- When switching computer, tablet, or phone
-- To keep a dated backup of catalogs and quotes
-- To copy your setup to a colleague’s machine (they import your JSON on their side — you still don’t share a cloud account)
+- Extra backup besides the cloud UUID
+- Before clearing browser data
+- To share a snapshot file without sharing your live workspace code
+- If you turn cloud sync off
 
 ## JSON import / export
 
