@@ -5,7 +5,7 @@ import {
   isAllowedOrigin,
   isRateLimited,
   parseWorkspaceBody,
-} from './_lib/workspaceSync'
+} from './sync.js'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
