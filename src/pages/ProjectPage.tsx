@@ -9,6 +9,7 @@ import { CableRunsTable } from '@/components/project/CableRunsTable'
 import { ProjectMaterialsTable } from '@/components/project/ProjectMaterialsTable'
 import { StatsCards } from '@/components/summary/StatsCards'
 import { SummaryPanel } from '@/components/summary/SummaryPanel'
+import { ZoneCableSummary } from '@/components/summary/ZoneCableSummary'
 import { Button } from '@/components/ui/button'
 import { useAppData } from '@/hooks/useAppData'
 import { useProject } from '@/hooks/useProject'
@@ -192,6 +193,7 @@ function ProjectView({
             />
             <SummaryPanel summary={summary} locale={locale} />
           </div>
+          <ZoneCableSummary zones={summary.byZone} locale={locale} />
         </>
       )}
 

@@ -94,3 +94,67 @@ describe('multicore C length', () => {
     expect(meters).toEqual([{ code: 'C', meters: 12 }])
   })
 })
+
+describe('byZone summary', () => {
+  it('aggregates cable and conduit metres by description and circuit type', () => {
+    const summary = calculateProjectSummary({
+      projectName: 'Test',
+      version: 1,
+      items: [
+        {
+          id: '1',
+          description: 'Hall Baixo',
+          distance: 6,
+          type: 'I',
+          conduit: 2,
+          spec: 'VJR',
+          notes: '',
+        },
+        {
+          id: '2',
+          description: 'Hall Baixo',
+          distance: 2,
+          type: 'I',
+          conduit: 3,
+          spec: 'C',
+          notes: '',
+        },
+        {
+          id: '3',
+          description: 'Cave',
+          distance: 10,
+          type: 'T',
+          conduit: 3,
+          spec: 'FNT',
+          notes: '',
+        },
+        {
+          id: '4',
+          description: 'Cave',
+          distance: 5,
+          type: 'I',
+          conduit: 3,
+          spec: 'FNT',
+          notes: '',
+        },
+      ],
+    })
+
+    expect(summary.byZone).toHaveLength(2)
+
+    const hall = summary.byZone.find((z) => z.description === 'Hall Baixo')
+    expect(hall?.conduitMeters).toBe(8)
+    // VJR: VJ×2×6 + R×6 = 12+6=18; C: 2 → 20 cable metres
+    expect(hall?.cableMeters).toBe(20)
+    expect(hall?.byCircuit).toEqual([
+      { type: 'I', sectionMm2: 1.5, conduitMeters: 8, cableMeters: 20 },
+    ])
+
+    const cave = summary.byZone.find((z) => z.description === 'Cave')
+    expect(cave?.byCircuit.map((c) => c.type)).toEqual(['I', 'T'])
+    expect(cave?.byCircuit.find((c) => c.type === 'T')?.cableMeters).toBe(30)
+    expect(cave?.byCircuit.find((c) => c.type === 'I')?.cableMeters).toBe(15)
+    expect(cave?.conduitMeters).toBe(15)
+    expect(cave?.cableMeters).toBe(45)
+  })
+})

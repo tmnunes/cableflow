@@ -143,9 +143,26 @@ export interface ProjectTotals {
   cableRuns: number
 }
 
+/** Cable + conduit metres for one circuit type within a zone */
+export interface ZoneCircuitSummary {
+  type: CircuitType
+  sectionMm2: number
+  conduitMeters: number
+  cableMeters: number
+}
+
+/** Aggregation keyed by cable-run description (zone / room) */
+export interface ZoneSummary {
+  description: string
+  conduitMeters: number
+  cableMeters: number
+  byCircuit: ZoneCircuitSummary[]
+}
+
 export interface ProjectSummary {
   totals: ProjectTotals
   bySection: SectionSummary[]
+  byZone: ZoneSummary[]
 }
 
 export type SortField =

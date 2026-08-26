@@ -16,6 +16,8 @@ export type {
   ProjectExport,
   ConductorLength,
   SectionSummary,
+  ZoneCircuitSummary,
+  ZoneSummary,
   ProjectTotals,
   ProjectSummary,
   SortField,
