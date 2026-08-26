@@ -49,6 +49,7 @@ export const pt: TranslationSchema = {
     I: 'Iluminação (I)',
     T: 'Tomadas (T)',
     P: 'Força (P)',
+    S: 'Força 6 mm² (S)',
     Q: 'Grande potência (Q)',
     G: 'Alimentação geral (G)',
   },
@@ -58,12 +59,14 @@ export const pt: TranslationSchema = {
     VJ: 'Vaivém (VJ)',
     N: 'Neutro (N)',
     T: 'Terra (T)',
+    C: 'Multifilar 3 condutores (C)',
     colors: {
       brown: 'Castanho',
       orange: 'Laranja',
       grey: 'Cinzento',
       blue: 'Azul',
       greenYellow: 'Verde / Amarelo',
+      black: 'Preto',
     },
   },
   summary: {

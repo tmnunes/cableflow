@@ -51,6 +51,7 @@ export const en = {
     I: 'Lighting (I)',
     T: 'Socket (T)',
     P: 'Power (P)',
+    S: 'Power 6 mm² (S)',
     Q: 'Large Power (Q)',
     G: 'Main Feed (G)',
   },
@@ -60,12 +61,14 @@ export const en = {
     VJ: 'Traveller (VJ)',
     N: 'Neutral (N)',
     T: 'Earth (T)',
+    C: 'Multicore 3-core (C)',
     colors: {
       brown: 'Brown',
       orange: 'Orange',
       grey: 'Grey',
       blue: 'Blue',
       greenYellow: 'Green / Yellow',
+      black: 'Black',
     },
   },
   summary: {

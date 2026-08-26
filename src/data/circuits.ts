@@ -5,6 +5,7 @@ export const CIRCUIT_TYPES: readonly CircuitTypeDefinition[] = [
   { code: 'I', sectionMm2: 1.5 },
   { code: 'T', sectionMm2: 2.5 },
   { code: 'P', sectionMm2: 4 },
+  { code: 'S', sectionMm2: 6 },
   { code: 'Q', sectionMm2: 10 },
   { code: 'G', sectionMm2: 16 },
 ] as const
@@ -17,9 +18,10 @@ export const CIRCUIT_TYPE_MAP: Record<string, CircuitTypeDefinition> = Object.fr
 export const CONDUCTORS: readonly ConductorDefinition[] = [
   { code: 'F', color: 'brown', hex: '#8B5A2B' },
   { code: 'R', color: 'orange', hex: '#E67E22' },
-  { code: 'VJ', color: 'grey', hex: '#7F8C8D' },
+  { code: 'VJ', color: 'grey', hex: '#7F8C8D', distanceFactor: 2 },
   { code: 'N', color: 'blue', hex: '#2980B9' },
   { code: 'T', color: 'greenYellow', hex: '#27AE60', hexSecondary: '#F1C40F' },
+  { code: 'C', color: 'black', hex: '#2C3E50', conductorCount: 3 },
 ] as const
 
 export const CONDUCTOR_MAP: Record<ConductorCode, ConductorDefinition> = Object.fromEntries(
@@ -33,6 +35,14 @@ export const CONDUCTOR_MAP: Record<ConductorCode, ConductorDefinition> = Object.
 export const CONDUCTOR_CODES_BY_LENGTH: readonly ConductorCode[] = [...CONDUCTORS]
   .map((c) => c.code)
   .sort((a, b) => b.length - a.length)
+
+export function conductorDistanceFactor(code: ConductorCode): number {
+  return CONDUCTOR_MAP[code]?.distanceFactor ?? 1
+}
+
+export function conductorPhysicalCount(code: ConductorCode): number {
+  return CONDUCTOR_MAP[code]?.conductorCount ?? 1
+}
 
 export {
   PROJECT_VERSION,

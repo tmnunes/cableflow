@@ -7,7 +7,11 @@ import type {
   ProjectTotals,
   SectionSummary,
 } from '@/types'
-import { CIRCUIT_TYPE_MAP } from '@/data/circuits'
+import {
+  CIRCUIT_TYPE_MAP,
+  conductorDistanceFactor,
+  conductorPhysicalCount,
+} from '@/data/circuits'
 import { parseSpec } from '@/utils/parser'
 
 export function getSectionMm2(type: CableRun['type']): number {
@@ -16,7 +20,7 @@ export function getSectionMm2(type: CableRun['type']): number {
 
 /**
  * Conductor meters for a single run:
- * each conductor quantity × distance.
+ * each conductor quantity × distance × distanceFactor (VJ is always ×2).
  */
 export function calculateRunConductors(run: CableRun): ConductorLength[] {
   const parsed = parseSpec(run.spec)
@@ -26,7 +30,7 @@ export function calculateRunConductors(run: CableRun): ConductorLength[] {
 
   return parsed.conductors.map((c) => ({
     code: c.code,
-    meters: c.quantity * run.distance,
+    meters: c.quantity * run.distance * conductorDistanceFactor(c.code),
   }))
 }
 
@@ -44,8 +48,10 @@ export function calculateProjectSummary(project: Project): ProjectSummary {
     const parsed = parseSpec(run.spec)
     if (parsed.ok) {
       for (const c of parsed.conductors) {
-        totalConductors += c.quantity
-        totalCableLength += c.quantity * distance
+        const physical = c.quantity * conductorPhysicalCount(c.code)
+        const meters = c.quantity * distance * conductorDistanceFactor(c.code)
+        totalConductors += physical
+        totalCableLength += meters
 
         const section = getSectionMm2(run.type)
         if (section <= 0) continue
@@ -54,7 +60,7 @@ export function calculateProjectSummary(project: Project): ProjectSummary {
           sectionMap.set(section, new Map())
         }
         const bucket = sectionMap.get(section)!
-        bucket.set(c.code, (bucket.get(c.code) ?? 0) + c.quantity * distance)
+        bucket.set(c.code, (bucket.get(c.code) ?? 0) + meters)
       }
     }
   }

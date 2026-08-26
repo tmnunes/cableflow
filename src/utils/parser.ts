@@ -1,8 +1,8 @@
 import type { ConductorCode, ParsedConductor, SpecParseOutcome } from '@/types'
-import { CONDUCTOR_CODES_BY_LENGTH } from '@/data/circuits'
+import { CONDUCTOR_CODES_BY_LENGTH, conductorPhysicalCount } from '@/data/circuits'
 
 /**
- * Parses cable specification codes such as FTN, F2R, 2VJTN, 4VJ, 3F2N, FRTN.
+ * Parses cable specification codes such as FTN, F2R, 2VJTN, 4VJ, 3F2N, FRTN, C.
  *
  * Grammar (left-to-right):
  *   Spec      := Segment+
@@ -102,9 +102,12 @@ export function isValidSpec(raw: string): boolean {
   return parseSpec(raw).ok
 }
 
-/** Total conductor count inside a parsed specification */
+/** Total physical conductors inside a parsed specification (C counts as 3). */
 export function countConductors(conductors: ParsedConductor[]): number {
-  return conductors.reduce((sum, c) => sum + c.quantity, 0)
+  return conductors.reduce(
+    (sum, c) => sum + c.quantity * conductorPhysicalCount(c.code),
+    0,
+  )
 }
 
 /** Human-readable breakdown for tooltips */

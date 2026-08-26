@@ -1,8 +1,8 @@
 /** Circuit type codes used in electrical projects */
-export type CircuitType = 'I' | 'T' | 'P' | 'Q' | 'G'
+export type CircuitType = 'I' | 'T' | 'P' | 'S' | 'Q' | 'G'
 
 /** Conductor codes inside a conduit specification */
-export type ConductorCode = 'F' | 'R' | 'VJ' | 'N' | 'T'
+export type ConductorCode = 'F' | 'R' | 'VJ' | 'N' | 'T' | 'C'
 
 export interface CircuitTypeDefinition {
   code: CircuitType
@@ -17,6 +17,16 @@ export interface ConductorDefinition {
   hex: string
   /** Secondary hex for striped conductors (e.g. earth) */
   hexSecondary?: string
+  /**
+   * Multiplier applied to run distance when totalling metres.
+   * VJ (traveller) is always ×2.
+   */
+  distanceFactor?: number
+  /**
+   * How many physical conductors this code occupies in the conduit.
+   * C (3-core multifilar) counts as 3.
+   */
+  conductorCount?: number
 }
 
 export interface ParsedConductor {
@@ -59,7 +69,7 @@ export function cableMaterialSourceKey(sectionMm2: number, code: ConductorCode):
 export function parseCableMaterialSourceKey(
   key: string,
 ): { sectionMm2: number; conductorCode: ConductorCode } | null {
-  const match = /^cable:(\d+(?:\.\d+)?):(F|R|VJ|N|T)$/.exec(key)
+  const match = /^cable:(\d+(?:\.\d+)?):(F|R|VJ|N|T|C)$/.exec(key)
   if (!match) return null
   return {
     sectionMm2: Number(match[1]),
