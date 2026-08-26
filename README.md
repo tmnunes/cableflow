@@ -25,9 +25,9 @@ To open the same space on another device: **Settings → Open another workspace*
 ### Cable calculation (CableFlow core)
 
 - Multiple projects with cable runs (one row per conduit)
-- Automatic cable section from circuit type (I / T / P / Q / G)
-- Spec parser for codes like `FTN`, `F2R`, `2VJTN`, `4VJ`, `3F2N`, `FRTN`
-- Conductor color swatches (F brown, R orange, VJ grey, N blue, T green/yellow)
+- Automatic cable section from circuit type (I / T / P / S / Q / G)
+- Spec parser for codes like `FTN`, `F2R`, `2VJTN`, `4VJ`, `3F2N`, `FRTN`, `C`
+- Conductor color swatches (F brown, R orange, VJ grey, N blue, T green/yellow, C black)
 - Live summary by section × conductor
 - Editable table: search, sort, inline edit, duplicate, delete, undo
 - Keyboard shortcuts on cable view: `Ctrl/Cmd+S` export project, `Ctrl/Cmd+O` import, `Ctrl/Cmd+P` print, `Ctrl/Cmd+Z` undo delete
@@ -238,20 +238,23 @@ At the same percentage, margin yields a higher sale price than markup. Calculati
 | I    | Lighting     | 1.5 mm² |
 | T    | Socket       | 2.5 mm² |
 | P    | Power        | 4 mm²   |
+| S    | Power 6 mm²  | 6 mm²   |
 | Q    | Large Power  | 10 mm²  |
 | G    | Main Feed    | 16 mm²  |
 
 ## Spec grammar
 
-`[quantity?][code]` repeated. Quantity defaults to `1`. Codes: `F`, `R`, `VJ`, `N`, `T` (longest match first).
+`[quantity?][code]` repeated. Quantity defaults to `1`. Codes: `F`, `R`, `VJ`, `N`, `T`, `C` (longest match first).
 
 Examples:
 
 - `FTN` → 1×F, 1×T, 1×N
 - `F2R` → 1×F, 2×R
 - `2VJTN` → 2×VJ, 1×T, 1×N
+- `C` → 1× multifilar 3-core cable (counts as 3 conductors for conduit matching)
 
-Each conductor length = quantity × run distance.
+Each conductor length = quantity × run distance × factor (`VJ` is always ×2; other codes ×1).
+`C` is sold/measured as cable metres (quantity × distance), not ×3.
 
 ## Project layout
 

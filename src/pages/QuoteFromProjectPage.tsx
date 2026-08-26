@@ -267,7 +267,7 @@ function RequirementLabel({
   color,
   locale,
 }: {
-  req: { conductorCode: 'F' | 'R' | 'VJ' | 'N' | 'T'; sectionMm2: number; meters: number; runCount: number }
+  req: { conductorCode: 'F' | 'R' | 'VJ' | 'N' | 'T' | 'C'; sectionMm2: number; meters: number; runCount: number }
   color: string
   locale: string
 }) {

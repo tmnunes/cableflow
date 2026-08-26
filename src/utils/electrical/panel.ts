@@ -92,10 +92,11 @@ export function summarizeProtections(circuits: Circuit[]): ProtectionSummaryItem
   })
 }
 
-export function mapSectionToCableType(sectionMm2?: number): 'I' | 'T' | 'P' | 'Q' | 'G' | undefined {
+export function mapSectionToCableType(sectionMm2?: number): 'I' | 'T' | 'P' | 'S' | 'Q' | 'G' | undefined {
   if (sectionMm2 === 1.5) return 'I'
   if (sectionMm2 === 2.5) return 'T'
   if (sectionMm2 === 4) return 'P'
+  if (sectionMm2 === 6) return 'S'
   if (sectionMm2 === 10) return 'Q'
   if (sectionMm2 === 16) return 'G'
   return undefined

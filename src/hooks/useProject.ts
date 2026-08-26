@@ -23,6 +23,7 @@ const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
   VJ: 'Traveller (VJ)',
   N: 'Neutral (N)',
   T: 'Earth (T)',
+  C: 'Multicore 3-core (C)',
 }
 
 function buildCableMaterials(
