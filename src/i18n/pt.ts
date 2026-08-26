@@ -226,6 +226,9 @@ export const pt: TranslationSchema = {
     catalogEmpty: 'Nenhum material encontrado no catálogo.',
     priceFromSelectedMaterial: 'Preço ligado ao material selecionado do fornecedor.',
     rollPriceHint: '{{meters}} m / rolo → {{price}} / m',
+    rollCeilHint:
+      '{{needed}} m necessários → {{rolls}} × {{metersPerRoll}} m ({{covered}} m por excesso)',
+    rollExactHint: '{{needed}} m → {{rolls}} × {{metersPerRoll}} m',
     units: {
       unit: 'Unidade',
       meter: 'Metro',

@@ -8,8 +8,8 @@ import { AutoResizeTextarea } from '@/components/ui/textarea'
 import type { ProjectMaterialItem } from '@/types/cable'
 import type { Material } from '@/types/material'
 import type { Supplier } from '@/types/supplier'
-import { catalogPriceForLine, lineUnitForCatalogSelection } from '@/utils/pricing/catalogLine'
-import { formatCurrency } from '@/utils/money'
+import { catalogPriceForLine, isMeterUnit, purchaseFromRollCatalog } from '@/utils/pricing/catalogLine'
+import { formatMeters } from '@/utils/cn'
 
 const UNITS = ['unit', 'meter', 'roll', 'box', 'set', 'kg', 'other'] as const
 
@@ -61,14 +61,43 @@ export function ProjectMaterialsTable({
     })
 
   const applyCatalogSelection = (item: ProjectMaterialItem, selected: Material) => {
-    const unit = lineUnitForCatalogSelection(
-      selected,
-      item.unit,
-      Boolean(item.cableSourceKey),
-    )
+    const neededMeters =
+      item.requiredMeters ??
+      (isMeterUnit(item.unit) ? item.quantity : undefined)
+
+    const rollPurchase =
+      neededMeters != null && neededMeters > 0
+        ? purchaseFromRollCatalog(neededMeters, selected)
+        : null
+
+    if (rollPurchase) {
+      onUpdate(item.id, {
+        unit: rollPurchase.unit,
+        quantity: rollPurchase.quantity,
+        unitPrice: rollPurchase.unitPrice,
+        catalogMaterialId: selected.id,
+        supplierId: selected.supplierId,
+        requiredMeters: neededMeters,
+      })
+      return
+    }
+
+    if (item.cableSourceKey) {
+      const meters = neededMeters ?? item.quantity
+      onUpdate(item.id, {
+        unit: 'meter',
+        quantity: meters,
+        unitPrice: catalogPriceForLine(selected, 'meter'),
+        catalogMaterialId: selected.id,
+        supplierId: selected.supplierId,
+        requiredMeters: meters,
+      })
+      return
+    }
+
     onUpdate(item.id, {
-      unit,
-      unitPrice: catalogPriceForLine(selected, unit),
+      unit: selected.unit,
+      unitPrice: catalogPriceForLine(selected, selected.unit),
       catalogMaterialId: selected.id,
       supplierId: selected.supplierId,
     })
@@ -138,10 +167,19 @@ export function ProjectMaterialsTable({
                 const isCableAuto = Boolean(item.cableSourceKey)
                 const supplier = supplierName(item.supplierId)
                 const catalog = catalogMaterials.find((m) => m.id === item.catalogMaterialId)
-                const rollConverted =
-                  catalog?.unit === 'roll' &&
-                  (catalog.metersPerRoll ?? 0) > 0 &&
-                  item.unit === 'meter'
+                const rollPurchase =
+                  catalog && (item.requiredMeters ?? 0) > 0
+                    ? purchaseFromRollCatalog(item.requiredMeters!, catalog)
+                    : null
+                const rollCeilHint = Boolean(
+                  rollPurchase &&
+                    item.unit === 'roll' &&
+                    item.requiredMeters != null &&
+                    rollPurchase.coveredMeters > item.requiredMeters,
+                )
+                const rollExactHint = Boolean(
+                  rollPurchase && item.unit === 'roll' && item.requiredMeters != null,
+                )
 
                 return (
                   <tr key={item.id} className="border-b border-border/50 align-top last:border-0">
@@ -224,12 +262,19 @@ export function ProjectMaterialsTable({
                         min={0}
                         step="0.01"
                       />
-                      {rollConverted && catalog?.metersPerRoll ? (
+                      {rollExactHint && rollPurchase && item.requiredMeters != null ? (
                         <div className="mt-1 text-[10px] text-muted-foreground">
-                          {t('projectMaterials.rollPriceHint', {
-                            meters: catalog.metersPerRoll,
-                            price: formatCurrency(item.unitPrice, locale),
-                          })}
+                          {t(
+                            rollCeilHint
+                              ? 'projectMaterials.rollCeilHint'
+                              : 'projectMaterials.rollExactHint',
+                            {
+                              needed: formatMeters(item.requiredMeters, locale),
+                              rolls: rollPurchase.quantity,
+                              metersPerRoll: rollPurchase.metersPerRoll,
+                              covered: formatMeters(rollPurchase.coveredMeters, locale),
+                            },
+                          )}
                         </div>
                       ) : null}
                     </td>

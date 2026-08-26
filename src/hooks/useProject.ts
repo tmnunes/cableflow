@@ -15,7 +15,7 @@ import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
 import { createId } from '@/utils/cn'
-import { catalogPriceForLine } from '@/utils/pricing/catalogLine'
+import { catalogPriceForLine, purchaseFromRollCatalog } from '@/utils/pricing/catalogLine'
 
 const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
   F: 'Phase (F)',
@@ -29,6 +29,7 @@ const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
 function buildCableMaterials(
   summary: ReturnType<typeof calculateProjectSummary>,
   existing: ProjectMaterialItem[],
+  catalogMaterials: Material[],
   tFn: (key: string, opts?: Record<string, unknown>) => string,
 ): ProjectMaterialItem[] {
   const byKey = new Map(
@@ -40,8 +41,34 @@ function buildCableMaterials(
     for (const cond of section.conductors) {
       const key = cableMaterialSourceKey(section.sectionMm2, cond.code)
       const prev = byKey.get(key)
+      const catalog = prev?.catalogMaterialId
+        ? catalogMaterials.find((m) => m.id === prev.catalogMaterialId)
+        : undefined
+      const rollPurchase = catalog
+        ? purchaseFromRollCatalog(cond.meters, catalog)
+        : null
+
       if (prev) {
-        cableItems.push({ ...prev, quantity: cond.meters })
+        if (rollPurchase) {
+          cableItems.push({
+            ...prev,
+            quantity: rollPurchase.quantity,
+            unit: rollPurchase.unit,
+            unitPrice: rollPurchase.unitPrice,
+            requiredMeters: cond.meters,
+          })
+        } else {
+          cableItems.push({
+            ...prev,
+            quantity: cond.meters,
+            unit: 'meter',
+            unitPrice:
+              catalog && prev.unit === 'roll'
+                ? catalogPriceForLine(catalog, 'meter')
+                : prev.unitPrice,
+            requiredMeters: cond.meters,
+          })
+        }
         continue
       }
 
@@ -57,6 +84,7 @@ function buildCableMaterials(
         unitPrice: 0,
         notes: '',
         cableSourceKey: key,
+        requiredMeters: cond.meters,
       })
     }
   }
@@ -79,7 +107,7 @@ function createEmptyRun(): CableRun {
 
 export function useProject(projectId: string) {
   const { t } = useTranslation()
-  const { projects, updateProject } = useAppData()
+  const { projects, updateProject, materials: catalogMaterials } = useAppData()
   const projectRecord = useMemo(
     () => projects.find((p) => p.id === projectId),
     [projects, projectId],
@@ -117,17 +145,23 @@ export function useProject(projectId: string) {
     }
 
     const currentMaterials = project.materials ?? []
-    const synced = buildCableMaterials(summary, currentMaterials, t)
-    const currentKeys = currentMaterials
-      .map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`)
-      .join(';')
-    const syncedKeys = synced
-      .map((m) => `${m.cableSourceKey ?? ''}|${m.id}|${m.quantity}`)
-      .join(';')
+    const synced = buildCableMaterials(summary, currentMaterials, catalogMaterials, t)
+    const materialSyncKey = (m: ProjectMaterialItem) =>
+      [
+        m.cableSourceKey ?? '',
+        m.id,
+        m.quantity,
+        m.unit,
+        m.unitPrice,
+        m.requiredMeters ?? '',
+        m.catalogMaterialId ?? '',
+      ].join('|')
+    const currentKeys = currentMaterials.map(materialSyncKey).join(';')
+    const syncedKeys = synced.map(materialSyncKey).join(';')
 
     if (currentKeys === syncedKeys) return
     updateProject(projectId, { materials: synced })
-  }, [summary, project.materials, projectId, t, updateProject])
+  }, [summary, project.materials, projectId, t, updateProject, catalogMaterials])
 
   const patchProject = useCallback(
     (patch: Partial<Pick<Project, 'projectName' | 'items' | 'materials'>>) => {
@@ -242,16 +276,23 @@ export function useProject(projectId: string) {
       >,
       quantity: number,
     ) => {
-      const unit = catalogMaterial.unit === 'roll' && catalogMaterial.metersPerRoll ? 'meter' : catalogMaterial.unit
+      const rollPurchase =
+        catalogMaterial.unit === 'roll' && catalogMaterial.metersPerRoll
+          ? purchaseFromRollCatalog(quantity, catalogMaterial)
+          : null
+      const unit = rollPurchase?.unit ?? (
+        catalogMaterial.unit === 'roll' && catalogMaterial.metersPerRoll ? 'meter' : catalogMaterial.unit
+      )
       const item: ProjectMaterialItem = {
         id: createId(),
         description: catalogMaterial.name,
-        quantity,
+        quantity: rollPurchase?.quantity ?? quantity,
         unit,
-        unitPrice: catalogPriceForLine(catalogMaterial, unit),
+        unitPrice: rollPurchase?.unitPrice ?? catalogPriceForLine(catalogMaterial, unit),
         notes: '',
         catalogMaterialId: catalogMaterial.id,
         supplierId: catalogMaterial.supplierId,
+        ...(rollPurchase ? { requiredMeters: quantity } : {}),
       }
       patchProject({ materials: [...projectMaterials, item] })
     },

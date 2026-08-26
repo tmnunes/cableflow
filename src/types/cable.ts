@@ -60,6 +60,11 @@ export interface ProjectMaterialItem {
   supplierId?: string
   /** Auto-generated from cable calculations — key like "cable:1.5:F" */
   cableSourceKey?: string
+  /**
+   * Required cable length in metres (from cable runs) before roll rounding.
+   * Kept so roll purchases can be recalculated when the summary changes.
+   */
+  requiredMeters?: number
 }
 
 export function cableMaterialSourceKey(sectionMm2: number, code: ConductorCode): string {

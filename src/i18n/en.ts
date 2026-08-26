@@ -228,6 +228,9 @@ export const en = {
     catalogEmpty: 'No materials found in catalog.',
     priceFromSelectedMaterial: 'Price linked to selected supplier material.',
     rollPriceHint: '{{meters}} m / roll → {{price}} / m',
+    rollCeilHint:
+      '{{needed}} m needed → {{rolls}} × {{metersPerRoll}} m rolls ({{covered}} m by excess)',
+    rollExactHint: '{{needed}} m → {{rolls}} × {{metersPerRoll}} m rolls',
     units: {
       unit: 'Unit',
       meter: 'Metre',
