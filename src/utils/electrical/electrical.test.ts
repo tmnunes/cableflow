@@ -226,7 +226,7 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.4')
+    expect(result.ruleSetVersion).toBe('1.5')
   })
 
   it('recommends 32 A 3P for an 11 kW three-phase kitchen hob', () => {
@@ -243,6 +243,22 @@ describe('calculateCircuitDesign', () => {
     expect(result.designCurrent).toBeCloseTo(11000 / (Math.sqrt(3) * 230), 1)
     expect(result.protection?.option?.rating).toBe(32)
     expect(result.protection?.option?.poles).toBe(3)
+    expect(result.errors).not.toContain('noProtectionCoversDesignCurrent')
+  })
+
+  it('recommends 40 A for a 7.4 kW single-phase induction hob', () => {
+    const result = calculateCircuitDesign({
+      circuit: {
+        category: 'kitchen',
+        loads: [{ id: 'hob1p', quantity: 1, unitPower: 7400, powerFactor: 1 }],
+        installation: { length: 12, systemPhase: 'single-phase', voltage: 230 },
+      },
+      ruleSet: EXAMPLE_ELECTRICAL_RULE_SET,
+      calculatedAt: '2026-08-24T00:00:00.000Z',
+    })
+
+    expect(result.designCurrent).toBeCloseTo(7400 / 230, 1)
+    expect(result.protection?.option?.rating).toBe(40)
     expect(result.errors).not.toContain('noProtectionCoversDesignCurrent')
   })
 

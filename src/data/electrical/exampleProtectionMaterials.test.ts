@@ -5,7 +5,7 @@ import { EXAMPLE_ELECTRICAL_RULE_SET } from '@/data/electrical/exampleRuleSet'
 describe('example protection materials', () => {
   it('seeds EFAPEL panel references linked to rule-set protection options', () => {
     const materials = createDefaultProtectionMaterials('2026-08-24T00:00:00.000Z')
-    expect(materials.length).toBe(18)
+    expect(materials.length).toBe(27)
     expect(materials.some((item) => item.code === '55110 3CP' && item.category === 'breakers')).toBe(true)
     expect(materials.some((item) => item.code === '55640 4BC' && item.category === 'rcd')).toBe(true)
     expect(materials.some((item) => item.model === 'Pro 3EM')).toBe(true)
