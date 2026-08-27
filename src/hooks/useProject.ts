@@ -3,95 +3,21 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type {
   CableRun,
-  ConductorCode,
   Material,
   Project,
   ProjectMaterialItem,
   SortDirection,
   SortField,
 } from '@/types'
-import { cableMaterialSourceKey } from '@/types'
 import { PROJECT_VERSION } from '@/data/circuits'
 import { useAppData } from '@/hooks/useAppData'
 import { calculateProjectSummary } from '@/utils/calculations'
+import {
+  buildCableMaterials,
+  materialsSyncFingerprint,
+} from '@/utils/cable/projectMaterials'
 import { createId } from '@/utils/cn'
 import { catalogPriceForLine, purchaseFromRollCatalog } from '@/utils/pricing/catalogLine'
-
-const CONDUCTOR_LABELS: Record<ConductorCode, string> = {
-  F: 'Phase (F)',
-  R: 'Return (R)',
-  VJ: 'Traveller (VJ)',
-  N: 'Neutral (N)',
-  T: 'Earth (T)',
-  C: 'Multicore 3-core (C)',
-}
-
-function buildCableMaterials(
-  summary: ReturnType<typeof calculateProjectSummary>,
-  existing: ProjectMaterialItem[],
-  catalogMaterials: Material[],
-  tFn: (key: string, opts?: Record<string, unknown>) => string,
-): ProjectMaterialItem[] {
-  const byKey = new Map(
-    existing.filter((m) => m.cableSourceKey).map((m) => [m.cableSourceKey!, m]),
-  )
-  const cableItems: ProjectMaterialItem[] = []
-
-  for (const section of summary.bySection) {
-    for (const cond of section.conductors) {
-      const key = cableMaterialSourceKey(section.sectionMm2, cond.code)
-      const prev = byKey.get(key)
-      const catalog = prev?.catalogMaterialId
-        ? catalogMaterials.find((m) => m.id === prev.catalogMaterialId)
-        : undefined
-      const rollPurchase = catalog
-        ? purchaseFromRollCatalog(cond.meters, catalog)
-        : null
-
-      if (prev) {
-        if (rollPurchase) {
-          cableItems.push({
-            ...prev,
-            quantity: rollPurchase.quantity,
-            unit: rollPurchase.unit,
-            unitPrice: rollPurchase.unitPrice,
-            requiredMeters: cond.meters,
-          })
-        } else {
-          cableItems.push({
-            ...prev,
-            quantity: cond.meters,
-            unit: 'meter',
-            unitPrice:
-              catalog && prev.unit === 'roll'
-                ? catalogPriceForLine(catalog, 'meter')
-                : prev.unitPrice,
-            requiredMeters: cond.meters,
-          })
-        }
-        continue
-      }
-
-      const label = CONDUCTOR_LABELS[cond.code] ?? cond.code
-      cableItems.push({
-        id: createId(),
-        description: tFn('projectMaterials.cableAutoDescription', {
-          section: section.sectionMm2,
-          conductor: label,
-        }),
-        quantity: cond.meters,
-        unit: 'meter',
-        unitPrice: 0,
-        notes: '',
-        cableSourceKey: key,
-        requiredMeters: cond.meters,
-      })
-    }
-  }
-
-  const manualItems = existing.filter((m) => !m.cableSourceKey)
-  return [...cableItems, ...manualItems]
-}
 
 function createEmptyRun(): CableRun {
   return {
@@ -131,12 +57,14 @@ export function useProject(projectId: string) {
 
   const summary = useMemo(() => calculateProjectSummary(project), [project])
 
-  const prevSummaryRef = useRef<string>('')
-  useEffect(() => {
-    const summaryKey = JSON.stringify(summary.bySection)
-    if (summaryKey === prevSummaryRef.current) return
-    prevSummaryRef.current = summaryKey
+  /** Live view: always recompute auto cable qty/rolls from current cable metres. */
+  const projectMaterials = useMemo(
+    () => buildCableMaterials(summary, project.materials ?? [], catalogMaterials, t),
+    [summary, project.materials, catalogMaterials, t],
+  )
 
+  /** Persist the live reconciliation so storage / quotes stay in sync. */
+  useEffect(() => {
     if (
       summary.bySection.length === 0 &&
       !(project.materials ?? []).some((m) => m.cableSourceKey)
@@ -146,20 +74,9 @@ export function useProject(projectId: string) {
 
     const currentMaterials = project.materials ?? []
     const synced = buildCableMaterials(summary, currentMaterials, catalogMaterials, t)
-    const materialSyncKey = (m: ProjectMaterialItem) =>
-      [
-        m.cableSourceKey ?? '',
-        m.id,
-        m.quantity,
-        m.unit,
-        m.unitPrice,
-        m.requiredMeters ?? '',
-        m.catalogMaterialId ?? '',
-      ].join('|')
-    const currentKeys = currentMaterials.map(materialSyncKey).join(';')
-    const syncedKeys = synced.map(materialSyncKey).join(';')
-
-    if (currentKeys === syncedKeys) return
+    if (materialsSyncFingerprint(currentMaterials) === materialsSyncFingerprint(synced)) {
+      return
+    }
     updateProject(projectId, { materials: synced })
   }, [summary, project.materials, projectId, t, updateProject, catalogMaterials])
 
@@ -253,8 +170,6 @@ export function useProject(projectId: string) {
     },
     [patchProject, project.items, t],
   )
-
-  const projectMaterials = useMemo(() => project.materials ?? [], [project.materials])
 
   const addMaterial = useCallback(() => {
     const item: ProjectMaterialItem = {
