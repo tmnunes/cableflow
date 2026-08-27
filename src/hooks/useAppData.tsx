@@ -14,6 +14,7 @@ import type { ProjectRecord } from '@/types/cable'
 import type { Supplier } from '@/types/supplier'
 import type { Locale, Theme } from '@/types'
 import { loadAppData, saveAppData } from '@/services/storage/appDataStore'
+import { normalizeAppData } from '@/services/storage/migration'
 import {
   loadLocale,
   loadTheme,
@@ -129,7 +130,11 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((value: Theme) => setThemeState(value), [])
   const setLocale = useCallback((value: Locale) => setLocaleState(value), [])
 
-  const replaceAppData = useCallback((next: AppData) => setData(next), [])
+  const replaceAppData = useCallback((next: AppData) => {
+    // Cloud LWW and imports must run the same migrations as local load,
+    // otherwise stale rule sets / circuit designs overwrite newer local state.
+    setData(normalizeAppData(next))
+  }, [])
 
   const setActiveProjectId = useCallback((id: string) => {
     setData((prev) => (prev.activeProjectId === id ? prev : { ...prev, activeProjectId: id }))

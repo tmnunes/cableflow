@@ -128,7 +128,7 @@ const DWELLING_DEDICATED = [...SINGLE_PHASE_TO_63, ...MCB_3P_IDS] as const
 export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
   id: 'example-default-v1',
   name: 'Example / Default',
-  version: '1.6',
+  version: '1.7',
   voltage: 230,
   frequency: 50,
   active: true,

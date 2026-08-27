@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ChevronDown, ChevronRight, Copy, Plus, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
@@ -18,6 +18,7 @@ import type { Circuit, CircuitCategory, CircuitLoad, LoadType, ValidationStatus 
 import { CIRCUIT_CATEGORIES } from '@/types/electrical'
 import type { Material } from '@/types/material'
 import { createId, cn } from '@/utils/cn'
+import { calculateCircuitDesign } from '@/utils/electrical/circuitDesign'
 import { loadDefaultsFromType } from '@/utils/electrical/quoteIntegration'
 import { protectionLabel } from '@/utils/electrical/panel'
 
@@ -73,7 +74,15 @@ export function CircuitEditor({
     (item) => item.active && (item.category === 'breakers' || item.category === 'protection' || item.category === 'rcd'),
   )
   const cableMaterials = materials.filter((item) => item.active && item.category === 'cables')
-  const design = circuit.design
+  // Live design from the active rule set — do not trust a stale stored snapshot alone.
+  const design = useMemo(() => {
+    if (!activeRuleSet) return circuit.design
+    return calculateCircuitDesign({
+      circuit,
+      ruleSet: activeRuleSet,
+      loadTypes,
+    })
+  }, [activeRuleSet, circuit, loadTypes])
   const suggestedProtectionMaterialId = design?.protection?.option?.materialId
   const suggestedProtectionMaterial = suggestedProtectionMaterialId
     ? protectionMaterials.find((item) => item.id === suggestedProtectionMaterialId)
