@@ -226,7 +226,24 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.3')
+    expect(result.ruleSetVersion).toBe('1.4')
+  })
+
+  it('recommends 32 A 3P for an 11 kW three-phase kitchen hob', () => {
+    const result = calculateCircuitDesign({
+      circuit: {
+        category: 'kitchen',
+        loads: [{ id: 'hob', quantity: 1, unitPower: 11000, powerFactor: 1 }],
+        installation: { length: 12, systemPhase: 'three-phase', voltage: 230 },
+      },
+      ruleSet: EXAMPLE_ELECTRICAL_RULE_SET,
+      calculatedAt: '2026-08-24T00:00:00.000Z',
+    })
+
+    expect(result.designCurrent).toBeCloseTo(11000 / (Math.sqrt(3) * 230), 1)
+    expect(result.protection?.option?.rating).toBe(32)
+    expect(result.protection?.option?.poles).toBe(3)
+    expect(result.errors).not.toContain('noProtectionCoversDesignCurrent')
   })
 
   it('flags voltage drop above the configured limit', () => {

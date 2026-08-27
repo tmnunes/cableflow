@@ -189,7 +189,7 @@ const SINGLE_PHASE_TO_32 = [
 export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
   id: 'example-default-v1',
   name: 'Example / Default',
-  version: '1.3',
+  version: '1.4',
   voltage: 230,
   frequency: 50,
   active: true,
@@ -251,18 +251,19 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
     {
       id: 'example-rule-kitchen',
       circuitCategory: 'kitchen',
-      defaultConductorSection: 2.5,
-      allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: [...SINGLE_PHASE_TO_32],
+      defaultConductorSection: 4,
+      allowedConductorSections: [2.5, 4, 6, 10],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
-      notes: 'Example / Default kitchen placeholders (MCB ladder to 32 A).',
+      notes:
+        'Example / Default — includes 3P up to 32 A for three-phase hobs / dedicated kitchen loads (e.g. 11 kW).',
     },
     {
       id: 'example-rule-appliance',
       circuitCategory: 'appliance',
       defaultConductorSection: 2.5,
-      allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: [...SINGLE_PHASE_TO_32],
+      allowedConductorSections: [2.5, 4, 6, 10],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
     },
     {

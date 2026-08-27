@@ -86,7 +86,10 @@ function mergeExampleCatalogs(raw: AppData): AppData {
     if (
       ruleSet.id === 'example-default-v1' &&
       ruleSet.isExample &&
-      (ruleSet.version === '1.0' || ruleSet.version === '1.1' || ruleSet.version === '1.2')
+      (ruleSet.version === '1.0' ||
+        ruleSet.version === '1.1' ||
+        ruleSet.version === '1.2' ||
+        ruleSet.version === '1.3')
     ) {
       const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
       return { ...fresh, createdAt: ruleSet.createdAt }
