@@ -16,7 +16,9 @@ import {
   createDefaultElectricalRuleSets,
   createDefaultLoadTypes,
   createDefaultProtectionMaterials,
+  EXAMPLE_ELECTRICAL_RULE_SET,
 } from '@/data/electrical'
+import { calculateCircuitDesign } from '@/utils/electrical/circuitDesign'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -83,15 +85,12 @@ function mergeExampleCatalogs(raw: AppData): AppData {
   const timestamp = nowIso()
   const exampleMaterials = createDefaultProtectionMaterials(timestamp)
   const exampleLoadTypes = createDefaultLoadTypes(timestamp)
+  const latestExampleVersion = EXAMPLE_ELECTRICAL_RULE_SET.version
   const upgradedRuleSets = (raw.electricalRuleSets ?? []).map((ruleSet) => {
     if (
       ruleSet.id === 'example-default-v1' &&
       ruleSet.isExample &&
-      (ruleSet.version === '1.0' ||
-        ruleSet.version === '1.1' ||
-        ruleSet.version === '1.2' ||
-        ruleSet.version === '1.3' ||
-        ruleSet.version === '1.4')
+      ruleSet.version !== latestExampleVersion
     ) {
       const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
       return { ...fresh, createdAt: ruleSet.createdAt }
@@ -117,10 +116,33 @@ function mergeExampleCatalogs(raw: AppData): AppData {
   }
 }
 
+/** Recompute stored circuit designs so rule-set upgrades take effect immediately. */
+function refreshCircuitDesigns(data: AppData): Circuit[] {
+  const ruleSet =
+    data.electricalRuleSets.find((item) => item.active) ?? data.electricalRuleSets[0]
+  if (!ruleSet) return data.circuits ?? []
+
+  return (data.circuits ?? []).map((circuit) => {
+    const design = calculateCircuitDesign({
+      circuit,
+      ruleSet,
+      loadTypes: data.loadTypes,
+    })
+    return {
+      ...circuit,
+      design,
+      selectedProtectionMaterialId:
+        circuit.selectedProtectionMaterialId !== undefined
+          ? circuit.selectedProtectionMaterialId
+          : design.protection?.option?.materialId,
+    }
+  })
+}
+
 function normalizeAppData(raw: AppData): AppData {
   const defaults = createDefaultAppData()
   const merged = mergeExampleCatalogs(raw)
-  return {
+  const normalized: AppData = {
     version: DATA_VERSION,
     projects: merged.projects.length > 0 ? merged.projects : defaults.projects,
     materials: merged.materials.length > 0 ? merged.materials : exampleMaterialsFallback(),
@@ -138,6 +160,11 @@ function normalizeAppData(raw: AppData): AppData {
       merged.projects.some((p) => p.id === merged.activeProjectId)
         ? merged.activeProjectId
         : merged.projects[0]?.id,
+  }
+
+  return {
+    ...normalized,
+    circuits: refreshCircuitDesigns(normalized),
   }
 }
 

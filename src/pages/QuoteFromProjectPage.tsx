@@ -21,7 +21,7 @@ import {
   cableSelectionsFromProject,
   extraProjectMaterials,
 } from '@/utils/cable/quoteImport'
-import { buildQuoteItemsFromCircuits } from '@/utils/electrical/quoteIntegration'
+import { buildQuoteItemsFromCircuits, mergeQuoteItemsByMaterialAndSupplier } from '@/utils/electrical/quoteIntegration'
 import { normalizeQuote } from '@/utils/quotes'
 import { formatMeters } from '@/utils/cn'
 
@@ -102,7 +102,10 @@ export function QuoteFromProjectPage() {
       ...quote,
       projectId,
       client: { ...quote.client, name: project.projectName },
-      items: [...cableItems, ...extraItems, ...circuitItems],
+      items: mergeQuoteItemsByMaterialAndSupplier(
+        [...cableItems, ...extraItems, ...circuitItems],
+        materials,
+      ),
     })
 
     upsertQuote(finalized)

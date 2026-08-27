@@ -15,6 +15,8 @@ export interface ProtectionSelectionInput {
 
 function polesMatchSystem(option: ProtectionOption, systemPhase?: 'single-phase' | 'three-phase'): boolean {
   if (!systemPhase) return true
+  // Legacy options without poles stay eligible for any system.
+  if (option.poles == null) return true
   if (systemPhase === 'three-phase') return option.poles === 3 || option.poles === 4
   return option.poles === 1 || option.poles === 2
 }
