@@ -87,13 +87,24 @@ function mergeExampleCatalogs(raw: AppData): AppData {
   const exampleLoadTypes = createDefaultLoadTypes(timestamp)
   const latestExampleVersion = EXAMPLE_ELECTRICAL_RULE_SET.version
   const upgradedRuleSets = (raw.electricalRuleSets ?? []).map((ruleSet) => {
-    if (
-      ruleSet.id === 'example-default-v1' &&
-      ruleSet.isExample &&
-      ruleSet.version !== latestExampleVersion
-    ) {
+    // Always refresh the seeded example rule set by id when behind,
+    // even if the user renamed it (isExample cleared on name edit).
+    if (ruleSet.id === 'example-default-v1' && ruleSet.version !== latestExampleVersion) {
       const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
-      return { ...fresh, createdAt: ruleSet.createdAt }
+      return {
+        ...fresh,
+        name: ruleSet.name,
+        isExample: ruleSet.isExample,
+        active: ruleSet.active,
+        createdAt: ruleSet.createdAt,
+        // Keep user-configured ampacity / installation methods when present.
+        conductorRules: ruleSet.conductorRules?.length
+          ? ruleSet.conductorRules
+          : fresh.conductorRules,
+        installationMethods: ruleSet.installationMethods?.length
+          ? ruleSet.installationMethods
+          : fresh.installationMethods,
+      }
     }
     return ruleSet
   })
@@ -139,7 +150,8 @@ function refreshCircuitDesigns(data: AppData): Circuit[] {
   })
 }
 
-function normalizeAppData(raw: AppData): AppData {
+/** Normalize / migrate AppData (local load, cloud pull, import). */
+export function normalizeAppData(raw: AppData): AppData {
   const defaults = createDefaultAppData()
   const merged = mergeExampleCatalogs(raw)
   const normalized: AppData = {

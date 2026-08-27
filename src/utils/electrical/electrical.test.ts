@@ -226,7 +226,7 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.6')
+    expect(result.ruleSetVersion).toBe('1.7')
   })
 
   it('recommends 32 A 3P for an 11 kW three-phase kitchen hob', () => {
