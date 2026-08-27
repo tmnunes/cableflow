@@ -226,7 +226,7 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.5')
+    expect(result.ruleSetVersion).toBe('1.6')
   })
 
   it('recommends 32 A 3P for an 11 kW three-phase kitchen hob', () => {
@@ -362,5 +362,68 @@ describe('quote and cable integration', () => {
     expect(items).toHaveLength(1)
     expect(items[0]?.source?.source).toBe('protection')
     expect(items[0]?.description).toBe('MCB 6A')
+  })
+
+  it('merges identical protection materials from the same supplier into one line', () => {
+    const material = {
+      id: 'mat-mcb-16',
+      name: 'EFAPEL MCB 1P C16',
+      category: 'breakers' as const,
+      unit: 'unit' as const,
+      purchasePrice: 12,
+      supplierId: 'sup-1',
+      active: true,
+      createdAt: '2026-08-24T00:00:00.000Z',
+      updatedAt: '2026-08-24T00:00:00.000Z',
+    }
+    const mkCircuit = (id: string) => ({
+      id,
+      projectId: 'p1',
+      name: id,
+      category: 'lighting' as const,
+      loads: [],
+      selectedProtectionMaterialId: material.id,
+      createdAt: '2026-08-24T00:00:00.000Z',
+      updatedAt: '2026-08-24T00:00:00.000Z',
+      design: {
+        installedPower: 100,
+        designPower: 100,
+        designCurrent: 0.5,
+        systemPhase: 'single-phase' as const,
+        voltage: 230,
+        protection: {
+          calculated: true,
+          validated: false,
+          option: {
+            id: 'mcb-16',
+            type: 'MCB' as const,
+            rating: 16,
+            poles: 1,
+            curve: 'C',
+            materialId: material.id,
+            enabled: true,
+          },
+          warnings: [],
+          errors: [],
+        },
+        additionalProtections: [],
+        validation: { status: 'warning' as const, checks: [] },
+        warnings: [],
+        errors: [],
+        ruleSetId: 'example-default-v1',
+        ruleSetVersion: '1.6',
+        calculatedAt: '2026-08-24T00:00:00.000Z',
+      },
+    })
+
+    const items = buildQuoteItemsFromCircuits(
+      [mkCircuit('a'), mkCircuit('b'), mkCircuit('c')],
+      [material],
+      20,
+    )
+    expect(items).toHaveLength(1)
+    expect(items[0]?.quantity).toBe(3)
+    expect(items[0]?.materialId).toBe(material.id)
+    expect(items[0]?.description).toBe(material.name)
   })
 })

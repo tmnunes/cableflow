@@ -80,7 +80,52 @@ export function buildQuoteItemsFromCircuits(
     }
   }
 
-  return items
+  return mergeQuoteItemsByMaterialAndSupplier(items, materials)
+}
+
+/**
+ * Collapse quote lines that share the same catalog material, supplier, unit and prices.
+ * Example: five circuits with the same MCB → one line with quantity 5.
+ */
+export function mergeQuoteItemsByMaterialAndSupplier(
+  items: QuoteItem[],
+  materials: Material[],
+): QuoteItem[] {
+  const materialMap = new Map(materials.map((item) => [item.id, item]))
+  const groups = new Map<string, QuoteItem>()
+
+  for (const item of items) {
+    const catalog = item.materialId ? materialMap.get(item.materialId) : undefined
+    const supplierId = catalog?.supplierId ?? ''
+    const key = item.materialId
+      ? [
+          'm',
+          item.materialId,
+          supplierId,
+          item.unit,
+          item.purchaseUnitPrice,
+          item.saleUnitPrice,
+        ].join('|')
+      : [
+          'd',
+          item.description.trim().toLowerCase(),
+          supplierId,
+          item.unit,
+          item.purchaseUnitPrice,
+          item.saleUnitPrice,
+        ].join('|')
+
+    const existing = groups.get(key)
+    if (!existing) {
+      groups.set(key, { ...item })
+      continue
+    }
+
+    existing.quantity += item.quantity
+    // Keep first source metadata; quantity is what matters for purchasing.
+  }
+
+  return [...groups.values()].map((item) => recalculateQuoteItem(item))
 }
 
 function quoteItemFromMaterial(input: {
