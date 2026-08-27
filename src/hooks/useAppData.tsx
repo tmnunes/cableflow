@@ -77,6 +77,7 @@ interface AppDataContextValue {
   deleteCircuit: (id: string) => void
   importCircuits: (circuits: Circuit[]) => void
   createCircuit: (projectId: string, name?: string) => Circuit
+  duplicateCircuit: (id: string) => Circuit | undefined
 
   // Load types
   loadTypes: LoadType[]
@@ -321,13 +322,19 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
   const refreshCircuit = useCallback((circuit: Circuit, dataSnapshot: AppData): Circuit => {
     const ruleSet = dataSnapshot.electricalRuleSets.find((item) => item.active) ?? dataSnapshot.electricalRuleSets[0]
     if (!ruleSet) return { ...circuit, updatedAt: nowIso() }
+    const design = calculateCircuitDesign({
+      circuit,
+      ruleSet,
+      loadTypes: dataSnapshot.loadTypes,
+    })
+    const suggestedProtectionMaterialId = design.protection?.option?.materialId
     return {
       ...circuit,
-      design: calculateCircuitDesign({
-        circuit,
-        ruleSet,
-        loadTypes: dataSnapshot.loadTypes,
-      }),
+      design,
+      selectedProtectionMaterialId:
+        circuit.selectedProtectionMaterialId !== undefined
+          ? circuit.selectedProtectionMaterialId
+          : suggestedProtectionMaterialId,
       updatedAt: nowIso(),
     }
   }, [])
@@ -374,6 +381,30 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     upsertCircuit(circuit)
     return circuit
   }, [upsertCircuit])
+
+  const duplicateCircuit = useCallback((id: string): Circuit | undefined => {
+    let copy: Circuit | undefined
+    setData((prev) => {
+      const source = prev.circuits.find((item) => item.id === id)
+      if (!source) return prev
+      const timestamp = nowIso()
+      const suffix = locale === 'pt' ? ' (cópia)' : ' (copy)'
+      copy = {
+        ...structuredClone(source),
+        id: createId(),
+        name: `${source.name}`.trim() ? `${source.name}${suffix}` : source.name,
+        code: source.code ? `${source.code}-copy` : undefined,
+        linkedCableRunId: undefined,
+        loads: source.loads.map((load) => ({ ...load, id: createId() })),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }
+      const next = refreshCircuit(copy, prev)
+      copy = next
+      return { ...prev, circuits: [...prev.circuits, next] }
+    })
+    return copy
+  }, [refreshCircuit, locale])
 
   const upsertLoadType = useCallback((loadType: LoadType) => {
     setData((prev) => {
@@ -485,6 +516,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteCircuit,
       importCircuits,
       createCircuit,
+      duplicateCircuit,
       loadTypes: data.loadTypes,
       upsertLoadType,
       deleteLoadType,
@@ -527,6 +559,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
       deleteCircuit,
       importCircuits,
       createCircuit,
+      duplicateCircuit,
       upsertLoadType,
       deleteLoadType,
       setLoadTypes,

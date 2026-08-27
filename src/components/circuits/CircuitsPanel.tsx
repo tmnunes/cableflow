@@ -17,6 +17,7 @@ export function CircuitsPanel({ projectId }: CircuitsPanelProps) {
     createCircuit,
     upsertCircuit,
     deleteCircuit,
+    duplicateCircuit,
     loadTypes,
     materials,
     locale,
@@ -53,14 +54,19 @@ export function CircuitsPanel({ projectId }: CircuitsPanelProps) {
           </Button>
         </div>
       ) : (
-        projectCircuits.map((circuit) => (
+        projectCircuits.map((circuit, index) => (
           <CircuitEditor
             key={circuit.id}
             circuit={circuit}
             loadTypes={loadTypes}
             materials={materials}
             locale={locale}
+            defaultExpanded={index === projectCircuits.length - 1}
             onChange={upsertCircuit}
+            onDuplicate={() => {
+              const copy = duplicateCircuit(circuit.id)
+              if (copy) toast.success(t('electricalCircuits.duplicated'))
+            }}
             onDelete={() => {
               if (window.confirm(t('electricalCircuits.deleteConfirm'))) deleteCircuit(circuit.id)
             }}

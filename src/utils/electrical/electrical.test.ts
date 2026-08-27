@@ -193,7 +193,7 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.1')
+    expect(result.ruleSetVersion).toBe('1.2')
   })
 
   it('flags voltage drop above the configured limit', () => {

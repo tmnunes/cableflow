@@ -19,7 +19,10 @@ export function buildQuoteItemsFromCircuits(
 
   for (const circuit of circuits) {
     const protection = circuit.design?.protection?.option
-    const protectionMaterialId = circuit.selectedProtectionMaterialId ?? protection?.materialId
+    const protectionMaterialId =
+      circuit.selectedProtectionMaterialId === ''
+        ? undefined
+        : (circuit.selectedProtectionMaterialId ?? protection?.materialId)
     if (protection && protectionMaterialId) {
       const material = materialMap.get(protectionMaterialId)
       items.push(quoteItemFromMaterial({

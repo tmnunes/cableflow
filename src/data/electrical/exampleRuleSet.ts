@@ -126,7 +126,7 @@ const MCB_3P_IDS = ['example-mcb-3p-c20', 'example-mcb-3p-c25', 'example-mcb-3p-
 export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
   id: 'example-default-v1',
   name: 'Example / Default',
-  version: '1.1',
+  version: '1.2',
   voltage: 230,
   frequency: 50,
   active: true,
@@ -149,7 +149,21 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
     conductorReactanceOhmPerKm: 0.08,
   },
   installationMethods: [
-    { id: 'unspecified', name: 'Unspecified', notes: 'Example placeholder. Configure a real installation method.' },
+    {
+      id: 'unspecified',
+      name: 'Unspecified',
+      notes: 'Example placeholder. Use when no ampacity table by method is configured yet.',
+    },
+    {
+      id: 'example-clipped-direct',
+      name: 'Example — clipped direct / surface',
+      notes: 'Example / Default label only. Add a matching ampacity table under Current-carrying capacity before validating.',
+    },
+    {
+      id: 'example-in-conduit',
+      name: 'Example — in conduit / trunking',
+      notes: 'Example / Default label only. Add a matching ampacity table under Current-carrying capacity before validating.',
+    },
   ],
   protectionOptions: EXAMPLE_PROTECTIONS,
   circuitRules: [
