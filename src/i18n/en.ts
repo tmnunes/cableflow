@@ -495,7 +495,10 @@ export const en = {
       simultaneityFactorFallback: 'A fallback simultaneity factor was used',
       designCurrentNotCalculable: 'Design current could not be calculated',
       noProtectionOptionsConfigured: 'No protection options are configured',
-      noProtectionCoversDesignCurrent: 'No configured protection covers the design current',
+      noProtectionCoversDesignCurrent:
+        'No configured protection covers the design current (need In ≥ Ib). Add a higher rating in Electrical rules for this category (e.g. 32 A).',
+      noPhaseMatchedProtectionOptions:
+        'No protection options match the circuit phase; falling back to other configured ratings',
       noSuitableConductorSection: 'No suitable conductor section is configured',
       conductorBelowRequiredCurrent: 'Recommended section does not cover the required current',
       protectionNotFullyCalculated: 'Protection coordination is not fully calculated',

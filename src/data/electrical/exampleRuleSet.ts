@@ -4,7 +4,7 @@ import { EXAMPLE_PROTECTION_MATERIAL_IDS } from '@/data/electrical/exampleProtec
 const M = EXAMPLE_PROTECTION_MATERIAL_IDS
 
 const EXAMPLE_PROTECTIONS: ProtectionOption[] = [
-  // Fila 1 — MCB 1P EFAPEL Série 55, 6 kA
+  // MCB 1P EFAPEL Série 55, 6 kA
   {
     id: 'example-mcb-1p-c10',
     type: 'MCB',
@@ -35,7 +35,68 @@ const EXAMPLE_PROTECTIONS: ProtectionOption[] = [
     materialId: M.mcb55120_1p_c20,
     enabled: true,
   },
-  // Fila 2 — MCB 3P
+  {
+    id: 'example-mcb-1p-c25',
+    type: 'MCB',
+    rating: 25,
+    poles: 1,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55125_1p_c25,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-1p-c32',
+    type: 'MCB',
+    rating: 32,
+    poles: 1,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55132_1p_c32,
+    enabled: true,
+  },
+  // MCB 2P / 1P+N
+  {
+    id: 'example-mcb-2p-c16',
+    type: 'MCB',
+    rating: 16,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55116_2p_c16,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-2p-c20',
+    type: 'MCB',
+    rating: 20,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55120_2p_c20,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-2p-c25',
+    type: 'MCB',
+    rating: 25,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55125_2p_c25,
+    enabled: true,
+  },
+  {
+    id: 'example-mcb-2p-c32',
+    type: 'MCB',
+    rating: 32,
+    poles: 2,
+    curve: 'C',
+    breakingCapacity: 6,
+    materialId: M.mcb55132_2p_c32,
+    enabled: true,
+  },
+  // MCB 3P
   {
     id: 'example-mcb-3p-c20',
     type: 'MCB',
@@ -66,28 +127,7 @@ const EXAMPLE_PROTECTIONS: ProtectionOption[] = [
     materialId: M.mcb55132_3p_c32,
     enabled: true,
   },
-  // Fila 4 — MCB 2P / 1P+N
-  {
-    id: 'example-mcb-2p-c16',
-    type: 'MCB',
-    rating: 16,
-    poles: 2,
-    curve: 'C',
-    breakingCapacity: 6,
-    materialId: M.mcb55116_2p_c16,
-    enabled: true,
-  },
-  {
-    id: 'example-mcb-2p-c20',
-    type: 'MCB',
-    rating: 20,
-    poles: 2,
-    curve: 'C',
-    breakingCapacity: 6,
-    materialId: M.mcb55120_2p_c20,
-    enabled: true,
-  },
-  // Filas 3–4 — RCD 4P EFAPEL
+  // RCD 4P EFAPEL
   {
     id: 'example-rcd-4p-40-30',
     type: 'RCD',
@@ -114,9 +154,32 @@ const EXAMPLE_PROTECTIONS: ProtectionOption[] = [
   },
 ]
 
-const MCB_1P_IDS = ['example-mcb-1p-c10', 'example-mcb-1p-c16', 'example-mcb-1p-c20'] as const
-const MCB_2P_IDS = ['example-mcb-2p-c16', 'example-mcb-2p-c20'] as const
+const MCB_1P_IDS = [
+  'example-mcb-1p-c10',
+  'example-mcb-1p-c16',
+  'example-mcb-1p-c20',
+  'example-mcb-1p-c25',
+  'example-mcb-1p-c32',
+] as const
+const MCB_2P_IDS = [
+  'example-mcb-2p-c16',
+  'example-mcb-2p-c20',
+  'example-mcb-2p-c25',
+  'example-mcb-2p-c32',
+] as const
 const MCB_3P_IDS = ['example-mcb-3p-c20', 'example-mcb-3p-c25', 'example-mcb-3p-c32'] as const
+
+/** Common single-phase ladder through 32 A for dedicated / higher loads. */
+const SINGLE_PHASE_TO_32 = [
+  'example-mcb-1p-c16',
+  'example-mcb-1p-c20',
+  'example-mcb-1p-c25',
+  'example-mcb-1p-c32',
+  'example-mcb-2p-c16',
+  'example-mcb-2p-c20',
+  'example-mcb-2p-c25',
+  'example-mcb-2p-c32',
+] as const
 
 /**
  * Example / Default electrical rule set.
@@ -126,7 +189,7 @@ const MCB_3P_IDS = ['example-mcb-3p-c20', 'example-mcb-3p-c25', 'example-mcb-3p-
 export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
   id: 'example-default-v1',
   name: 'Example / Default',
-  version: '1.2',
+  version: '1.3',
   voltage: 230,
   frequency: 50,
   active: true,
@@ -190,32 +253,33 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'kitchen',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32],
       calculationMethod: 'sumLoads',
-      notes: 'Example / Default kitchen placeholders.',
+      notes: 'Example / Default kitchen placeholders (MCB ladder to 32 A).',
     },
     {
       id: 'example-rule-appliance',
       circuitCategory: 'appliance',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32],
       calculationMethod: 'sumLoads',
     },
     {
       id: 'example-rule-hvac',
       circuitCategory: 'hvac',
       defaultConductorSection: 2.5,
-      allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20', 'example-mcb-3p-c25'],
+      allowedConductorSections: [2.5, 4, 6, 10],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
+      notes: 'Example / Default — includes 3P up to 32 A so Ib just above 25 A can be covered.',
     },
     {
       id: 'example-rule-water-heating',
       circuitCategory: 'waterHeating',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6],
-      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-2p-c20'],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32],
       calculationMethod: 'sumLoads',
     },
     {
@@ -223,7 +287,7 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       circuitCategory: 'motor',
       defaultConductorSection: 2.5,
       allowedConductorSections: [2.5, 4, 6, 10],
-      protectionOptionIds: ['example-mcb-1p-c16', 'example-mcb-1p-c20', 'example-mcb-3p-c20', 'example-mcb-3p-c25'],
+      protectionOptionIds: [...SINGLE_PHASE_TO_32, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
     },
     {
@@ -233,13 +297,13 @@ export const EXAMPLE_ELECTRICAL_RULE_SET: ElectricalRuleSet = {
       allowedConductorSections: [4, 6, 10, 16],
       protectionOptionIds: [...MCB_2P_IDS, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
-      notes: 'Example / Default — cargas dedicadas / EV (ex.: MCB 2P C20 pos. 15).',
+      notes: 'Example / Default — cargas dedicadas / EV (ex.: MCB 2P/3P até 32 A).',
     },
     {
       id: 'example-rule-other',
       circuitCategory: 'other',
       allowedConductorSections: [1.5, 2.5, 4, 6, 10, 16],
-      protectionOptionIds: [...MCB_1P_IDS, ...MCB_2P_IDS],
+      protectionOptionIds: [...MCB_1P_IDS, ...MCB_2P_IDS, ...MCB_3P_IDS],
       calculationMethod: 'sumLoads',
     },
   ],

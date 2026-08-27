@@ -101,6 +101,39 @@ describe('protection selection', () => {
     )
     expect(result.option?.rating).toBe(16)
   })
+
+  it('selects 32 A when Ib is just above 25 A', () => {
+    const hvacRule = EXAMPLE_ELECTRICAL_RULE_SET.circuitRules.find(
+      (rule) => rule.circuitCategory === 'hvac',
+    )
+    const result = selectProtection(
+      {
+        designCurrent: 25.1,
+        circuitRule: hvacRule,
+        systemPhase: 'three-phase',
+      },
+      EXAMPLE_ELECTRICAL_RULE_SET,
+    )
+    expect(result.calculated).toBe(true)
+    expect(result.option?.rating).toBe(32)
+    expect(result.option?.poles).toBe(3)
+  })
+
+  it('prefers 2P over 3P for single-phase when both cover Ib', () => {
+    const powerRule = EXAMPLE_ELECTRICAL_RULE_SET.circuitRules.find(
+      (rule) => rule.circuitCategory === 'power',
+    )
+    const result = selectProtection(
+      {
+        designCurrent: 25.1,
+        circuitRule: powerRule,
+        systemPhase: 'single-phase',
+      },
+      EXAMPLE_ELECTRICAL_RULE_SET,
+    )
+    expect(result.option?.rating).toBe(32)
+    expect(result.option?.poles).toBe(2)
+  })
 })
 
 describe('conductor selection', () => {
@@ -193,7 +226,7 @@ describe('calculateCircuitDesign', () => {
     expect(result.warnings).toContain('ampacityNotConfigured')
     expect(result.validation.status).not.toBe('ok')
     expect(result.ruleSetId).toBe('example-default-v1')
-    expect(result.ruleSetVersion).toBe('1.2')
+    expect(result.ruleSetVersion).toBe('1.3')
   })
 
   it('flags voltage drop above the configured limit', () => {
