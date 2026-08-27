@@ -83,7 +83,11 @@ function mergeExampleCatalogs(raw: AppData): AppData {
   const timestamp = nowIso()
   const exampleMaterials = createDefaultProtectionMaterials(timestamp)
   const upgradedRuleSets = (raw.electricalRuleSets ?? []).map((ruleSet) => {
-    if (ruleSet.id === 'example-default-v1' && ruleSet.isExample && ruleSet.version === '1.0') {
+    if (
+      ruleSet.id === 'example-default-v1' &&
+      ruleSet.isExample &&
+      (ruleSet.version === '1.0' || ruleSet.version === '1.1')
+    ) {
       const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
       return { ...fresh, createdAt: ruleSet.createdAt }
     }

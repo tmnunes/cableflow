@@ -238,6 +238,80 @@ export function ElectricalRulesPage() {
       </Card>
 
       <Card className="border-border/70">
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">{t('electricalRules.installationMethods')}</CardTitle>
+            <p className="mt-1 text-sm font-normal text-muted-foreground">
+              {t('electricalRules.installationMethodsHint')}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              patch({
+                installationMethods: [
+                  ...draft.installationMethods,
+                  {
+                    id: createId(),
+                    name: t('electricalRules.newInstallationMethod'),
+                    notes: '',
+                  },
+                ],
+              })
+            }
+          >
+            <Plus className="h-4 w-4" />
+            {t('electricalRules.addInstallationMethod')}
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {draft.installationMethods.map((method, index) => (
+            <div key={method.id} className="grid gap-3 rounded-md border border-border/70 p-3 sm:grid-cols-[1fr_1fr_auto]">
+              <label className="text-sm">
+                <span className="mb-1 block text-muted-foreground">{t('electricalRules.methodName')}</span>
+                <Input
+                  value={method.name}
+                  onChange={(e) => {
+                    const installationMethods = draft.installationMethods.map((item, i) =>
+                      i === index ? { ...item, name: e.target.value } : item,
+                    )
+                    patch({ installationMethods })
+                  }}
+                />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block text-muted-foreground">{t('electricalRules.methodNotes')}</span>
+                <Input
+                  value={method.notes ?? ''}
+                  onChange={(e) => {
+                    const installationMethods = draft.installationMethods.map((item, i) =>
+                      i === index ? { ...item, notes: e.target.value } : item,
+                    )
+                    patch({ installationMethods })
+                  }}
+                />
+              </label>
+              <div className="flex items-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={draft.installationMethods.length <= 1}
+                  onClick={() =>
+                    patch({
+                      installationMethods: draft.installationMethods.filter((_, i) => i !== index),
+                    })
+                  }
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/70">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base">{t('electricalRules.ampacity')}</CardTitle>
@@ -267,7 +341,38 @@ export function ElectricalRulesPage() {
             {t('electricalRules.addAmpacityRow')}
           </Button>
         </CardHeader>
-        <CardContent className="overflow-x-auto px-0">
+        <CardContent className="space-y-3 overflow-x-auto px-0">
+          <div className="px-4">
+            <label className="block text-sm">
+              <span className="mb-1 block text-muted-foreground">{t('electricalRules.ampacityMethod')}</span>
+              <select
+                className="flex h-9 w-full max-w-md rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                value={conductorRule?.installationMethodId ?? 'unspecified'}
+                onChange={(e) => {
+                  const rule = conductorRule ?? {
+                    id: createId(),
+                    conductorMaterial: 'copper' as const,
+                    installationMethodId: 'unspecified',
+                    ampacityBySection: [],
+                  }
+                  patch({
+                    conductorRules: [
+                      {
+                        ...rule,
+                        installationMethodId: e.target.value,
+                      },
+                    ],
+                  })
+                }}
+              >
+                {draft.installationMethods.map((method) => (
+                  <option key={method.id} value={method.id}>
+                    {method.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
           {ampacityRows.length === 0 ? (
             <p className="px-4 py-6 text-sm text-amber-700">{t('electrical.codes.ampacityNotConfigured')}</p>
           ) : (
