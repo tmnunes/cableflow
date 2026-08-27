@@ -493,7 +493,10 @@ export const pt: TranslationSchema = {
       simultaneityFactorFallback: 'Foi usado um fator de simultaneidade de recurso',
       designCurrentNotCalculable: 'A corrente de projeto não pôde ser calculada',
       noProtectionOptionsConfigured: 'Não há opções de proteção configuradas',
-      noProtectionCoversDesignCurrent: 'Nenhuma proteção configurada cobre a corrente de projeto',
+      noProtectionCoversDesignCurrent:
+        'Nenhuma proteção configurada cobre a corrente de projeto (é necessário In ≥ Ib). Adicione um calibre superior nas regras elétricas para esta categoria (ex.: 32 A).',
+      noPhaseMatchedProtectionOptions:
+        'Nenhuma opção de proteção corresponde ao sistema de fases; a usar outros calibres configurados',
       noSuitableConductorSection: 'Nenhuma secção de condutor adequada está configurada',
       conductorBelowRequiredCurrent: 'A secção recomendada não cobre a corrente necessária',
       protectionNotFullyCalculated: 'A coordenação da proteção não está totalmente calculada',

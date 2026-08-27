@@ -148,6 +148,7 @@ export function calculateCircuitDesign(input: CircuitDesignInput): CircuitDesign
           designCurrent,
           sectionMm2: conductor?.recommendedSection,
           circuitRule,
+          systemPhase: installation.system,
         },
         ruleSet,
       )

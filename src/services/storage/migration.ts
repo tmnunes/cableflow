@@ -82,11 +82,16 @@ function nowIso(): string {
 function mergeExampleCatalogs(raw: AppData): AppData {
   const timestamp = nowIso()
   const exampleMaterials = createDefaultProtectionMaterials(timestamp)
+  const exampleLoadTypes = createDefaultLoadTypes(timestamp)
   const upgradedRuleSets = (raw.electricalRuleSets ?? []).map((ruleSet) => {
     if (
       ruleSet.id === 'example-default-v1' &&
       ruleSet.isExample &&
-      (ruleSet.version === '1.0' || ruleSet.version === '1.1')
+      (ruleSet.version === '1.0' ||
+        ruleSet.version === '1.1' ||
+        ruleSet.version === '1.2' ||
+        ruleSet.version === '1.3' ||
+        ruleSet.version === '1.4')
     ) {
       const fresh = createDefaultElectricalRuleSets(timestamp)[0]!
       return { ...fresh, createdAt: ruleSet.createdAt }
@@ -94,9 +99,18 @@ function mergeExampleCatalogs(raw: AppData): AppData {
     return ruleSet
   })
 
+  // Add any new example load types without overwriting user-edited rows.
+  const loadTypeMap = new Map((raw.loadTypes ?? []).map((item) => [item.id, item]))
+  for (const item of exampleLoadTypes) {
+    if (!loadTypeMap.has(item.id)) {
+      loadTypeMap.set(item.id, item)
+    }
+  }
+
   return {
     ...raw,
     materials: mergeById(raw.materials ?? [], exampleMaterials),
+    loadTypes: [...loadTypeMap.values()],
     electricalRuleSets: upgradedRuleSets.length
       ? upgradedRuleSets
       : createDefaultElectricalRuleSets(timestamp),
