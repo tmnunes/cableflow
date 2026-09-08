@@ -444,8 +444,15 @@ export const pt: TranslationSchema = {
       selectAll: 'Seleccione um material para cada necessidade de cabo.',
       create: 'Criar orçamento',
       createFromProject: 'Criar orçamento',
+      refresh: 'Actualizar orçamento',
+      refreshFromProject: 'Actualizar orçamento',
+      refreshTitle: 'Actualizar orçamento a partir do projeto',
+      refreshSubtitle: 'Actualizar {{quote}} com os cabos e materiais actuais de "{{project}}".',
+      refreshHint:
+        'O orçamento existente será actualizado no mesmo número. Dados do cliente, mão de obra, notas e numeração mantêm-se.',
       back: 'Voltar aos cabos',
       created: 'Orçamento criado a partir do projeto.',
+      refreshed: 'Orçamento actualizado a partir do projeto.',
       aggregatedHint:
         'Os comprimentos são somados por tipo de condutor e secção — não por descrição do circuito.',
       runCount: '{{count}} circuitos',

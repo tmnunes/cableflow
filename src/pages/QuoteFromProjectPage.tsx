@@ -23,15 +23,27 @@ import {
 } from '@/utils/cable/quoteImport'
 import { buildQuoteItemsFromCircuits, mergeQuoteItemsByMaterialAndSupplier } from '@/utils/electrical/quoteIntegration'
 import { normalizeQuote } from '@/utils/quotes'
+import { findLatestQuoteForProject } from '@/utils/quotes/projectQuote'
 import { formatMeters } from '@/utils/cn'
 
 export function QuoteFromProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { projects, materials, createQuote, upsertQuote, companySettings, locale, circuits } = useAppData()
+  const {
+    projects,
+    materials,
+    quotes,
+    createQuote,
+    upsertQuote,
+    companySettings,
+    locale,
+    circuits,
+  } = useAppData()
 
   const project = projects.find((p) => p.id === projectId)
+  const existingQuote = projectId ? findLatestQuoteForProject(quotes, projectId) : undefined
+  const isRefresh = Boolean(existingQuote)
   const requirements = useMemo(
     () => (project ? aggregateCableRequirements(project) : []),
     [project],
@@ -71,13 +83,13 @@ export function QuoteFromProjectPage() {
     setSelections((prev) => ({ ...prev, [key]: materialId }))
   }
 
-  const handleCreate = () => {
+  const handleSubmit = () => {
     if (!canCreate) {
       toast.error(t('quotes.fromProject.selectAll'))
       return
     }
 
-    const quote = createQuote(projectId)
+    const baseQuote = existingQuote ?? createQuote(projectId)
     const cableItems = buildQuoteItemsFromAggregatedMapping(
       requirements,
       Object.entries(mergedSelections).map(([requirementKey, materialId]) => ({
@@ -99,17 +111,23 @@ export function QuoteFromProjectPage() {
     )
 
     const finalized = normalizeQuote({
-      ...quote,
+      ...baseQuote,
       projectId,
-      client: { ...quote.client, name: project.projectName },
+      client: {
+        ...baseQuote.client,
+        name: baseQuote.client.name?.trim() ? baseQuote.client.name : project.projectName,
+      },
       items: mergeQuoteItemsByMaterialAndSupplier(
         [...cableItems, ...extraItems, ...circuitItems],
         materials,
       ),
+      updatedAt: new Date().toISOString(),
     })
 
     upsertQuote(finalized)
-    toast.success(t('quotes.fromProject.created'))
+    toast.success(
+      isRefresh ? t('quotes.fromProject.refreshed') : t('quotes.fromProject.created'),
+    )
     navigate(`/quotes/${finalized.id}`)
   }
 
@@ -118,7 +136,7 @@ export function QuoteFromProjectPage() {
   if (requirements.length === 0 && extras.length === 0 && circuitItemsPreview.length === 0) {
     return (
       <div className="space-y-4">
-        <Header projectName={project.projectName} />
+        <Header projectName={project.projectName} isRefresh={isRefresh} quoteNumber={existingQuote?.number} />
         <Card className="border-border/70">
           <CardContent className="py-12 text-center text-sm text-muted-foreground">
             {t('quotes.fromProject.noRequirements')}
@@ -133,8 +151,10 @@ export function QuoteFromProjectPage() {
 
   return (
     <div className="space-y-4">
-      <Header projectName={project.projectName} />
-      <p className="text-xs text-muted-foreground">{t('quotes.fromProject.readyHint')}</p>
+      <Header projectName={project.projectName} isRefresh={isRefresh} quoteNumber={existingQuote?.number} />
+      <p className="text-xs text-muted-foreground">
+        {isRefresh ? t('quotes.fromProject.refreshHint') : t('quotes.fromProject.readyHint')}
+      </p>
 
       {unmapped.length > 0 ? (
         <Card className="border-border/70">
@@ -241,8 +261,8 @@ export function QuoteFromProjectPage() {
       ) : null}
 
       <div className="flex flex-wrap gap-2 pt-2">
-        <Button onClick={handleCreate} disabled={!canCreate}>
-          {t('quotes.fromProject.create')}
+        <Button onClick={handleSubmit} disabled={!canCreate}>
+          {isRefresh ? t('quotes.fromProject.refresh') : t('quotes.fromProject.create')}
         </Button>
         <Button variant="outline" onClick={() => navigate(`/projects/${projectId}/cables`)}>
           {t('quotes.fromProject.back')}
@@ -252,13 +272,28 @@ export function QuoteFromProjectPage() {
   )
 }
 
-function Header({ projectName }: { projectName: string }) {
+function Header({
+  projectName,
+  isRefresh,
+  quoteNumber,
+}: {
+  projectName: string
+  isRefresh?: boolean
+  quoteNumber?: string
+}) {
   const { t } = useTranslation()
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">{t('quotes.fromProject.title')}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">
+        {isRefresh ? t('quotes.fromProject.refreshTitle') : t('quotes.fromProject.title')}
+      </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        {t('quotes.fromProject.subtitle', { project: projectName })}
+        {isRefresh
+          ? t('quotes.fromProject.refreshSubtitle', {
+              project: projectName,
+              quote: quoteNumber ?? '',
+            })
+          : t('quotes.fromProject.subtitle', { project: projectName })}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">{t('quotes.fromProject.aggregatedHint')}</p>
     </div>

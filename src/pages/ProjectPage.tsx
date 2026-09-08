@@ -13,12 +13,13 @@ import { ZoneCableSummary } from '@/components/summary/ZoneCableSummary'
 import { Button } from '@/components/ui/button'
 import { useAppData } from '@/hooks/useAppData'
 import { useProject } from '@/hooks/useProject'
+import { findLatestQuoteForProject } from '@/utils/quotes/projectQuote'
 
 type Tab = 'cables' | 'materials' | 'circuits' | 'panel'
 
 export function ProjectPage() {
   const { projectId } = useParams<{ projectId: string }>()
-  const { projects, locale, setActiveProjectId } = useAppData()
+  const { projects, locale, setActiveProjectId, quotes } = useAppData()
 
   useEffect(() => {
     if (projectId && projects.some((project) => project.id === projectId)) {
@@ -30,15 +31,17 @@ export function ProjectPage() {
     return <Navigate to="/projects" replace />
   }
 
-  return <ProjectView projectId={projectId} locale={locale} />
+  return <ProjectView projectId={projectId} locale={locale} quotes={quotes} />
 }
 
 function ProjectView({
   projectId,
   locale,
+  quotes,
 }: {
   projectId: string
   locale: string
+  quotes: ReturnType<typeof useAppData>['quotes']
 }) {
   const { t } = useTranslation()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -76,6 +79,7 @@ function ProjectView({
   } = useProject(projectId)
 
   const { materials: catalogMaterials, suppliers, circuits } = useAppData()
+  const existingQuote = findLatestQuoteForProject(quotes, projectId)
 
   const setActiveTab = (tab: Tab) => {
     const next = new URLSearchParams(searchParams)
@@ -96,7 +100,9 @@ function ProjectView({
           <Button variant="outline" asChild>
             <Link to={`/quotes/from-project/${projectId}`}>
               <FileText className="h-4 w-4" />
-              {t('quotes.fromProject.createFromProject')}
+              {existingQuote
+                ? t('quotes.fromProject.refreshFromProject')
+                : t('quotes.fromProject.createFromProject')}
             </Link>
           </Button>
         </div>
