@@ -446,8 +446,15 @@ export const en = {
       selectAll: 'Select a material for every cable requirement.',
       create: 'Create quote',
       createFromProject: 'Create quote',
+      refresh: 'Refresh quote',
+      refreshFromProject: 'Refresh quote',
+      refreshTitle: 'Refresh quote from project',
+      refreshSubtitle: 'Update {{quote}} with current cables and materials from "{{project}}".',
+      refreshHint:
+        'Existing quote will be updated in place. Client details, labour, notes and quote number are kept.',
       back: 'Back to cables',
       created: 'Quote created from project.',
+      refreshed: 'Quote refreshed from project.',
       aggregatedHint:
         'Cable lengths are summed by conductor type and section — not per circuit description.',
       runCount: '{{count}} circuits',
