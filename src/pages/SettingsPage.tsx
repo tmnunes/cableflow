@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { DataTransferRow } from '@/components/common/DataTransferRow'
 import { CompanySettingsForm } from '@/components/settings/CompanySettingsForm'
+import { SupportDonateCard } from '@/components/settings/SupportDonateCard'
 import { WorkspaceSyncCard } from '@/components/settings/WorkspaceSyncCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAppData } from '@/hooks/useAppData'
@@ -67,6 +68,8 @@ export function SettingsPage() {
       </div>
 
       <WorkspaceSyncCard />
+
+      <SupportDonateCard />
 
       <CompanySettingsForm settings={companySettings} onChange={updateCompanySettings} />
 

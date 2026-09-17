@@ -2,6 +2,8 @@ import { NavLink, useLocation } from 'react-router-dom'
 import {
   Bolt,
   Cable,
+  Coffee,
+  ExternalLink,
   FileText,
   LayoutDashboard,
   Package,
@@ -13,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAppData } from '@/hooks/useAppData'
+import { getKofiUrl } from '@/config/donate'
 import { cn } from '@/utils/cn'
 
 const navItems = [
@@ -37,6 +40,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
   const { t } = useTranslation()
   const { activeProject } = useAppData()
   const location = useLocation()
+  const kofiUrl = getKofiUrl()
 
   const cablesPath = activeProject
     ? `/projects/${activeProject.id}/cables?tab=cables`
@@ -46,7 +50,7 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
     : '/projects'
 
   return (
-    <nav className={cn('flex flex-col gap-1 p-3', className)}>
+    <nav className={cn('flex h-full flex-col gap-1 p-3', className)}>
       <div className="mb-4 px-2">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           {t('app.name')}
@@ -85,6 +89,20 @@ export function Sidebar({ onNavigate, className }: SidebarProps) {
           </NavLink>
         )
       })}
+
+      {kofiUrl ? (
+        <a
+          href={kofiUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={onNavigate}
+          className="mt-auto flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+        >
+          <Coffee className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">{t('nav.support')}</span>
+          <ExternalLink className="h-3.5 w-3.5 shrink-0 opacity-60" />
+        </a>
+      ) : null}
     </nav>
   )
 }

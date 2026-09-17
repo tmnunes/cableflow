@@ -164,6 +164,7 @@ export const en = {
     circuits: 'Circuits',
     panel: 'Panel',
     closeMenu: 'Close menu',
+    support: 'Support CableFlow',
   },
   dashboard: {
     title: 'Dashboard',
@@ -660,6 +661,13 @@ export const en = {
     settingsMaterialsSuppliersImported: 'Settings, materials and suppliers imported.',
     settingsMaterialsSuppliersImportConfirm:
       'Import company settings, materials and suppliers from this file?',
+    support: {
+      title: 'Support CableFlow',
+      description:
+        'CableFlow is free to use. If it helps your work, a small donation covers hosting and keeps the project alive.',
+      cta: 'Donate on Ko-fi',
+      hint: 'Opens Ko-fi in a new tab. No account needed in CableFlow.',
+    },
     workspace: {
       title: 'Cloud workspace',
       description:

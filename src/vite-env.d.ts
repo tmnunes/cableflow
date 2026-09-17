@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  // No Supabase secrets in the browser — cloud sync uses /api/workspace (server-only env).
+  // Cloud secrets stay server-side. Public donate URL is safe in the browser.
+  readonly VITE_KOFI_URL?: string
 }
 
 interface ImportMeta {

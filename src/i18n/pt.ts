@@ -162,6 +162,7 @@ export const pt: TranslationSchema = {
     circuits: 'Circuitos',
     panel: 'Quadro',
     closeMenu: 'Fechar menu',
+    support: 'Apoiar o CableFlow',
   },
   dashboard: {
     title: 'Dashboard',
@@ -658,6 +659,13 @@ export const pt: TranslationSchema = {
     settingsMaterialsSuppliersImported: 'Definições, materiais e fornecedores importados.',
     settingsMaterialsSuppliersImportConfirm:
       'Importar definições da empresa, materiais e fornecedores deste ficheiro?',
+    support: {
+      title: 'Apoiar o CableFlow',
+      description:
+        'O CableFlow é gratuito. Se te for útil no trabalho, uma pequena doação ajuda a cobrir a infraestrutura e a manter o projecto vivo.',
+      cta: 'Doar no Ko-fi',
+      hint: 'Abre o Ko-fi noutro separador. Não é preciso conta no CableFlow.',
+    },
     workspace: {
       title: 'Espaço na cloud',
       description:
