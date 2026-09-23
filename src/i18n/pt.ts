@@ -268,6 +268,58 @@ export const pt: TranslationSchema = {
     metersPerRoll: 'Metros por rolo',
     exported: 'Materiais exportados.',
     imported: 'Materiais importados.',
+    csv: {
+      title: 'Importar cotação do fornecedor (CSV)',
+      description:
+        'Importe uma lista de preços ou cotação de um fornecedor. Escolha primeiro o fornecedor — é aplicado a todas as linhas importadas.',
+      formatTitle: 'Formato CSV',
+      formatDelimiter:
+        'Use ponto e vírgula (;) ou vírgula (,) como separador. O Excel em português costuma exportar com ";".',
+      formatColumns:
+        'Colunas obrigatórias: name e purchasePrice. Recomendada: code (serve para actualizar itens existentes). Opcionais: salePrice, unit, metersPerRoll, category, brand, notes.',
+      formatUnits:
+        'Unidades aceites: unit, meter, roll, box, set, hour, kg, other (também aliases como un, m, rolo, cx).',
+      formatCategories:
+        'As categorias devem coincidir com o catálogo (ex.: cables, breakers, devices). Valores desconhecidos passam a other.',
+      formatSupplier:
+        'Não coloque o fornecedor no ficheiro. Seleccione-o no formulário antes de carregar.',
+      formatMerge:
+        'Linhas com o mesmo code desse fornecedor actualizam o material existente. Sem code cria sempre um material novo.',
+      allowedUnits: 'Unidades: {{units}}',
+      allowedCategories: 'Categorias: {{categories}}',
+      supplierLabel: 'Fornecedor desta importação',
+      supplierPlaceholder: 'Seleccionar fornecedor…',
+      supplierRequired: 'Seleccione um fornecedor antes de escolher o ficheiro CSV.',
+      noSuppliers: 'Sem fornecedores activos — adicione um primeiro.',
+      downloadTemplate: 'Descarregar template CSV',
+      chooseFile: 'Escolher ficheiro CSV',
+      emptyFile: 'O ficheiro CSV não tem linhas de dados.',
+      nothingToImport: 'Não há linhas válidas para importar.',
+      previewSummary:
+        '{{create}} novos · {{update}} actualizar · {{error}} erros (separador "{{delimiter}}")',
+      confirm: 'Importar {{count}} linhas',
+      cancel: 'Cancelar',
+      imported: 'Importação concluída: {{created}} criados, {{updated}} actualizados, {{skipped}} ignorados.',
+      colLine: 'Linha',
+      colStatus: 'Estado',
+      colIssues: 'Problemas',
+      status: {
+        create: 'Novo',
+        update: 'Actualizar',
+        error: 'Erro',
+      },
+      errors: {
+        missingHeaders: 'Cabeçalhos em falta (é preciso pelo menos name ou code).',
+        nameRequired: 'O nome é obrigatório.',
+        purchasePriceInvalid: 'Preço de compra inválido.',
+        salePriceInvalid: 'Preço de venda inválido.',
+        unitInvalid: 'Unidade desconhecida.',
+        unitFallback: 'Unidade definida como unit.',
+        categoryFallback: 'Categoria desconhecida — a usar other.',
+        metersPerRollInvalid: 'Metros por rolo inválidos.',
+        metersPerRollRequired: 'metersPerRoll é obrigatório quando a unidade é roll.',
+      },
+    },
     categories: {
       cables: 'Cabos',
       conduit: 'Tubagem',

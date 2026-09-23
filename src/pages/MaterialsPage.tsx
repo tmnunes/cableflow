@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { createEmptyMaterial, useAppData } from '@/hooks/useAppData'
+import { MaterialsCsvImportCard } from '@/components/materials/MaterialsCsvImportCard'
 import type { Material, MaterialCategory, SortDirection } from '@/types'
 import { MATERIAL_CATEGORIES, MATERIAL_UNITS } from '@/types'
 import { createId } from '@/utils/cn'
@@ -31,7 +32,7 @@ type MaterialSortField = 'name' | 'category' | 'purchasePrice' | 'salePrice'
 
 export function MaterialsPage() {
   const { t } = useTranslation()
-  const { materials, suppliers, upsertMaterial, deleteMaterial, locale } =
+  const { materials, suppliers, upsertMaterial, deleteMaterial, setMaterials, locale } =
     useAppData()
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<MaterialCategory | 'all'>('all')
@@ -128,6 +129,12 @@ export function MaterialsPage() {
           </Button>
         </div>
       </div>
+
+      <MaterialsCsvImportCard
+        materials={materials}
+        suppliers={suppliers}
+        onApply={setMaterials}
+      />
 
       <Card className="border-border/70">
         <CardHeader className="flex flex-col gap-3 space-y-0">

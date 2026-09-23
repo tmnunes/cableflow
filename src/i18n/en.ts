@@ -270,6 +270,58 @@ export const en = {
     metersPerRoll: 'Metres per roll',
     exported: 'Materials exported.',
     imported: 'Materials imported.',
+    csv: {
+      title: 'Import supplier quotation (CSV)',
+      description:
+        'Import a price list or quotation from a supplier. Choose the supplier first — it is applied to every imported row.',
+      formatTitle: 'CSV format',
+      formatDelimiter:
+        'Use semicolon (;) or comma (,) as separator. Excel in Portuguese usually exports with ";".',
+      formatColumns:
+        'Required columns: name and purchasePrice. Recommended: code (used to update existing items). Optional: salePrice, unit, metersPerRoll, category, brand, notes.',
+      formatUnits:
+        'Accepted units: unit, meter, roll, box, set, hour, kg, other (aliases like un, m, rolo, cx also work).',
+      formatCategories:
+        'Categories must match catalog values (e.g. cables, breakers, devices). Unknown values fall back to other.',
+      formatSupplier:
+        'Do not put the supplier in the file. Select it in the form before uploading.',
+      formatMerge:
+        'Rows with the same code for that supplier update the existing material. Empty code always creates a new material.',
+      allowedUnits: 'Units: {{units}}',
+      allowedCategories: 'Categories: {{categories}}',
+      supplierLabel: 'Supplier for this import',
+      supplierPlaceholder: 'Select supplier…',
+      supplierRequired: 'Select a supplier before choosing the CSV file.',
+      noSuppliers: 'No active suppliers — add one first.',
+      downloadTemplate: 'Download CSV template',
+      chooseFile: 'Choose CSV file',
+      emptyFile: 'The CSV file has no data rows.',
+      nothingToImport: 'No valid rows to import.',
+      previewSummary:
+        '{{create}} new · {{update}} update · {{error}} errors (delimiter "{{delimiter}}")',
+      confirm: 'Import {{count}} rows',
+      cancel: 'Cancel',
+      imported: 'Import finished: {{created}} created, {{updated}} updated, {{skipped}} skipped.',
+      colLine: 'Line',
+      colStatus: 'Status',
+      colIssues: 'Issues',
+      status: {
+        create: 'New',
+        update: 'Update',
+        error: 'Error',
+      },
+      errors: {
+        missingHeaders: 'Missing header columns (need at least name or code).',
+        nameRequired: 'Name is required.',
+        purchasePriceInvalid: 'Invalid purchase price.',
+        salePriceInvalid: 'Invalid sale price.',
+        unitInvalid: 'Unknown unit.',
+        unitFallback: 'Unit defaulted to unit.',
+        categoryFallback: 'Unknown category — using other.',
+        metersPerRollInvalid: 'Invalid metres per roll.',
+        metersPerRollRequired: 'metresPerRoll is required when unit is roll.',
+      },
+    },
     categories: {
       cables: 'Cables',
       conduit: 'Conduit',
