@@ -10,6 +10,10 @@ import {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const origin = req.headers.origin
+    const requestHost =
+      (typeof req.headers['x-forwarded-host'] === 'string'
+        ? req.headers['x-forwarded-host']
+        : null) ?? (typeof req.headers.host === 'string' ? req.headers.host : null)
 
     if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Origin', origin ?? '*')
@@ -18,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(204).end()
     }
 
-    if (!isAllowedOrigin(origin)) {
+    if (!isAllowedOrigin(origin, requestHost)) {
       return res.status(403).json({ error: 'forbidden_origin' })
     }
 

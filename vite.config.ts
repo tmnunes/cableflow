@@ -36,7 +36,11 @@ function workspaceDevApiPlugin(mode: string): Plugin {
         if (!url.startsWith('/api/workspace')) return next()
 
         const origin = req.headers.origin
-        if (!isAllowedOrigin(origin)) {
+        const requestHost =
+          (typeof req.headers['x-forwarded-host'] === 'string'
+            ? req.headers['x-forwarded-host']
+            : null) ?? (typeof req.headers.host === 'string' ? req.headers.host : null)
+        if (!isAllowedOrigin(origin, requestHost)) {
           res.statusCode = 403
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: 'forbidden_origin' }))

@@ -100,8 +100,10 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key — never commit>
 Optional hardening:
 
 ```bash
-ALLOWED_ORIGINS=https://cableflow-ruby.vercel.app,http://localhost:5173
+ALLOWED_ORIGINS=https://cableflow.auraconnect.pt,https://cableflow-ruby.vercel.app,http://localhost:5173
 ```
+
+Same-origin requests (Origin host = request Host) are always allowed, so a custom domain works even if you forget to list it. Use `ALLOWED_ORIGINS` to also permit cross-origin callers.
 
 3. Deploy to Vercel (the `api/workspace.ts` function is deployed automatically). Local dev serves the same route via a Vite middleware plugin.
 

@@ -228,14 +228,34 @@ export function isRateLimited(clientKey: string): boolean {
   return false
 }
 
-export function isAllowedOrigin(origin: string | null | undefined): boolean {
+/**
+ * Allow missing Origin (same-origin GET / curl), listed ALLOWED_ORIGINS,
+ * or Origin that matches this request Host (custom domains / preview URLs).
+ */
+export function isAllowedOrigin(
+  origin: string | null | undefined,
+  requestHost?: string | null,
+): boolean {
   if (!origin) return true
+
   const allowed = (process.env.ALLOWED_ORIGINS ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean)
-  if (allowed.length === 0) return true
-  return allowed.includes(origin)
+  if (allowed.includes(origin)) return true
+
+  if (requestHost) {
+    try {
+      const originHost = new URL(origin).host
+      const host = requestHost.split(',')[0]?.trim().toLowerCase()
+      if (host && originHost.toLowerCase() === host) return true
+    } catch {
+      // ignore invalid Origin
+    }
+  }
+
+  // Empty allowlist: permit (dev / misconfigured); non-empty: deny unknowns
+  return allowed.length === 0
 }
 
 export const corsHeaders = {
