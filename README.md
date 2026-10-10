@@ -118,7 +118,7 @@ npm run build
 npm run preview
 ```
 
-The app is a client-side SPA (React Router). On Vercel, `vercel.json` rewrites unknown paths to `index.html` so a refresh on `/projects`, `/quotes/:id`, and similar routes does not 404.
+Public marketing pages (`/`, `/en/`, guides, margin calculator) are static HTML generated at build time. The private app is a client-side SPA (`app.html`) behind React Router; Vercel rewrites `/dashboard`, `/projects`, `/quotes`, etc. to `/app.html`. Unknown URLs serve a real `404.html` (no soft-404 SPA fallback).
 
 ### Tests
 

@@ -1,8 +1,155 @@
 {
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "cableflow-ruby.vercel.app" }],
+      "destination": "https://cableflow.auraconnect.pt/:path*",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/app.html" },
+    { "source": "/dashboard/", "destination": "/app.html" },
+    { "source": "/dashboard/:path*", "destination": "/app.html" },
+    { "source": "/projects", "destination": "/app.html" },
+    { "source": "/projects/", "destination": "/app.html" },
+    { "source": "/projects/:path*", "destination": "/app.html" },
+    { "source": "/cables", "destination": "/app.html" },
+    { "source": "/cables/", "destination": "/app.html" },
+    { "source": "/cables/:path*", "destination": "/app.html" },
+    { "source": "/circuits", "destination": "/app.html" },
+    { "source": "/circuits/", "destination": "/app.html" },
+    { "source": "/circuits/:path*", "destination": "/app.html" },
+    { "source": "/materials", "destination": "/app.html" },
+    { "source": "/materials/", "destination": "/app.html" },
+    { "source": "/materials/:path*", "destination": "/app.html" },
+    { "source": "/load-types", "destination": "/app.html" },
+    { "source": "/load-types/", "destination": "/app.html" },
+    { "source": "/load-types/:path*", "destination": "/app.html" },
+    { "source": "/suppliers", "destination": "/app.html" },
+    { "source": "/suppliers/", "destination": "/app.html" },
+    { "source": "/suppliers/:path*", "destination": "/app.html" },
+    { "source": "/quotes", "destination": "/app.html" },
+    { "source": "/quotes/", "destination": "/app.html" },
+    { "source": "/quotes/:path*", "destination": "/app.html" },
+    { "source": "/electrical-rules", "destination": "/app.html" },
+    { "source": "/electrical-rules/", "destination": "/app.html" },
+    { "source": "/electrical-rules/:path*", "destination": "/app.html" },
+    { "source": "/settings", "destination": "/app.html" },
+    { "source": "/settings/", "destination": "/app.html" },
+    { "source": "/settings/:path*", "destination": "/app.html" }
+  ],
+  "headers": [
+    {
+      "source": "/dashboard(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/projects(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/cables(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/circuits(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/materials(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/load-types(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/suppliers(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/quotes(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/electrical-rules(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/settings(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/app.html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/seo/calculator.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/en/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/guias/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/calculadora-margem-markup/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }

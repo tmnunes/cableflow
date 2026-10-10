@@ -10,6 +10,7 @@ import {
   isRateLimited,
   parseWorkspaceBody,
 } from './api/workspace/sync.ts'
+import { seoPublicPagesPlugin } from './seo/plugin.ts'
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url))
 
@@ -109,10 +110,24 @@ function workspaceDevApiPlugin(mode: string): Plugin {
 }
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), tailwindcss(), workspaceDevApiPlugin(mode)],
+  plugins: [react(), tailwindcss(), workspaceDevApiPlugin(mode), seoPublicPagesPlugin()],
   resolve: {
     alias: {
       '@': path.resolve(rootDir, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        app: path.resolve(rootDir, 'app.html'),
+        calculator: path.resolve(rootDir, 'src/public-site/calculator-main.ts'),
+      },
+      output: {
+        entryFileNames: (chunk) =>
+          chunk.name === 'calculator' ? 'seo/calculator.js' : 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
     },
   },
 }))

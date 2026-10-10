@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "generate:og": "node scripts/generate-og.mjs",
+    "build": "tsc -b && node scripts/generate-og.mjs && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run"
@@ -37,9 +38,13 @@
     "@vercel/node": "^7.0.0",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4.1.13",
     "typescript": "~6.0.2",
     "vite": "^8.2.0",
     "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "sharp@0.34.5": true
   }
 }

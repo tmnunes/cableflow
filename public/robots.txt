@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /projects
+Disallow: /cables
+Disallow: /circuits
+Disallow: /materials
+Disallow: /load-types
+Disallow: /suppliers
+Disallow: /quotes
+Disallow: /electrical-rules
+Disallow: /settings
+Disallow: /api/
+Disallow: /app.html
+
+Sitemap: https://cableflow.auraconnect.pt/sitemap.xml
